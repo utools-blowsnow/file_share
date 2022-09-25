@@ -1,0 +1,25 @@
+{
+  "pluginName": "文件分享",
+  "description": "文件分享",
+  "author": "blowsnow",
+  "homepage": "https://github.com/utools-blowsnow/file_share",
+  "main": "index.html",
+  "preload": "preload.js",
+  "logo": "logo.png",
+  "version": "1.0.1",
+  "features": [
+    {
+      "code": "open",
+      "explain": "文件分享",
+      "cmds":[
+        "文件分享",
+        {
+          "type": "files",
+          "label": "文件匹配",
+          "fileType": "file",
+          "minLength": 1
+        }
+      ]
+    }
+  ]
+}
