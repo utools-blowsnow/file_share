@@ -15,7 +15,7 @@
         "文件分享",
         {
           "type": "files",
-          "label": "文件匹配",
+          "label": "文件分享",
           "fileType": "file",
           "minLength": 1
         }

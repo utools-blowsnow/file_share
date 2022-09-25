@@ -1,9 +1,7 @@
-import IUploader from './IUploader'
+import IUploader from '../IUploader'
 import axios from 'axios'
 import Qs from 'qs'
-import UploadException from './exception/UploadException'
-
-var ubrowser;
+import UploadException from '../exception/UploadException'
 
 export default class YoudaoUploader extends IUploader{
 
@@ -13,33 +11,15 @@ export default class YoudaoUploader extends IUploader{
         return {
             ...res,
             data: res.body === "" ? "" : JSON.parse(res.body),
-            proxy: "http://127.0.0.1:7788",
+            proxy: "http://127.0.0.1:8888",
             rejectUnauthorized: false,
         }
     }
 
-    static uploadStream(url,file,method='post',params={}){
-        var that = this;
-        let reader = new FileReader();
-        reader.readAsArrayBuffer(file);//安字节读取文件并存储至二进制缓存区
-        return new Promise((resolve, reject) => {
-            reader.onload = async function (e) {
-                let result = new Uint8Array(e.target.result);
-                let res2 = await that.request({
-                    url: url,
-                    method: method,
-                    body: result,
-                    ...params
-                });
-                resolve(res2);
-            }
-        })
-    }
-
-    static async upload(file,config=false) {
+    static async upload(file,config=false,progressCallback=false) {
         let expire = config.expire || 7;
         let headers = {
-            'Cookie': ''
+            'Cookie': YoudaoUploader.cookie
         }
 
         // https://note.youdao.com/yws/api/personal/sync/upload?keyfrom=web
@@ -74,7 +54,7 @@ export default class YoudaoUploader extends IUploader{
                 ...headers,
                 'Content-Type': 'application/x-zip-compressed'
             }
-        })
+        },progressCallback)
         console.log(res2);
 
         var md5 = require('md5');
@@ -124,17 +104,21 @@ export default class YoudaoUploader extends IUploader{
     }
 
 
-    static login(){
-        ubrowser = utools.ubrowser;
-        return ubrowser.goto('https://note.youdao.com/signIn/wxlogin.html?state=Pz6LQu0MeS06z6Mw40Lqz0ZZZZZZuHqz0&redirect_uri=https%3A%2F%2Fnote.youdao.com%2Flogin%2Facc%2Fcallback')
+    static async login(){
+        var ubrowser = await utools.ubrowser.goto('https://note.youdao.com/web')
             .devTools('detach')
-            .wait(function(){
-                setInterval(function (){
+            .wait(() => {
+                console.log(document.cookie);
+                setInterval(()=>{
                     console.log(document.cookie);
                 },1000)
-                console.log(document.cookie);
-            },5*60*1000)
-            .run({ width: 1000, height: 600 });
+                return true;
+            },60000)
+            .run({ width: 1000, height: 600 })
+
+        console.log(ubrowser);
+
+        return ubrowser;
     }
 
     static name(){
@@ -142,21 +126,9 @@ export default class YoudaoUploader extends IUploader{
     }
 
     static config(){
-        var that = this;
-        var nowhandle = false;
         return [
-            {label: "登录", name: "expire", type: "button",handle: async function (){
-                console.log('登录',nowhandle);
-                if (!ubrowser){
-                    nowhandle = true;
-                    try {
-                        await that.login();
-                    }catch (e){}finally {
-                        nowhandle = false;
-                    }
-                }else{
-                    console.log(ubrowser,ubrowser.hide());
-                }
+            {label: "登录", name: "expire", type: "button",handle: async () =>{
+                    this.login();
             }},
             {label: "有效期(天)", name: "expire", type: "number", min: 1,value: "7"}
         ];

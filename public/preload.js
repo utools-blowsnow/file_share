@@ -2,6 +2,7 @@ const { ipcRenderer, remote, clipboard, shell,dialog } = require('electron')
 const fs = require('fs')
 const path = require('path')
 const process = require('process');
+const axios = require("axios");
 
 window.inUtools = true;
 window.utils = {
@@ -39,15 +40,35 @@ window.utils = {
     },
     openExternal: shell.openExternal,
     readFile:(pathObj)=>{
-      var bitmap = fs.readFileSync(pathObj.path);
+      var buffer = fs.readFileSync(pathObj.path);
       class MyFile extends File{
           setPath(path){
               this.temp_path = path;
           }
       }
-      var file = new MyFile(bitmap,pathObj.name);
+      var file = new MyFile([buffer],pathObj.name);
       file.setPath(pathObj.path);
       return file;
+    },
+    readFileA:(pathObj)=>{
+        class MyFile extends File{
+            setPath(path){
+                this.temp_path = path;
+            }
+        }
+        console.log('load ',pathObj);
+        return new Promise((resolve,reject)=>{
+            console.log(pathObj.path);
+            fs.readFile(pathObj.path,(err,bitmap)=>{
+                if (err) reject(err);
+                var file = new MyFile(bitmap,pathObj.name);
+                file.setPath(pathObj.path);
+                resolve(file);
+            });
+        })
+    },
+    createReadStream(path){
+        return fs.createReadStream(path)
     },
     createWriteStream(path){
         return fs.createWriteStream(path)
@@ -86,7 +107,7 @@ window.utils = {
         return new Promise((resolve,reject) => {
             request(params, function(error, response, body) {
                 if (error !== null) reject(error);
-                resolve(response.toJSON());
+                resolve(response);
             });
         })
     },
@@ -95,3 +116,8 @@ window.utils = {
         return new FormData();
     }
 }
+window.request = (params) => {
+    const request = require("request-promise");
+
+    return request(params);
+};

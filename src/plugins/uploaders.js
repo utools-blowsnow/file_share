@@ -1,7 +1,7 @@
 
 const files = [];
 files.push(require.context('@/upload',false,/\.js$/));
-const path = require("path");
+const path = require('path');
 
 const modules = [];
 for(let file of files){

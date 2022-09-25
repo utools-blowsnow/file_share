@@ -41,6 +41,9 @@
           <template v-else-if="configParameter.type === 'button'">
             <el-button size="mini" @click="configParameter.handle($event,nowUploader)">{{configParameter.label}}</el-button>
           </template>
+          <template v-else-if="configParameter.type === 'tip'">
+            <div v-html="configParameter.value"></div>
+          </template>
           <template v-else>
             <el-input size="mini"  v-model="nowUploader.config[configParameter.name]"></el-input>
           </template>
@@ -107,27 +110,37 @@ export default {
   mounted(){
     if (window.utils.db("active_uploader")){
       this.active_uploader = window.utils.db("active_uploader");
+
+      // 加载配置
+      this.changeActiveApi();
+    }else{
+      this.active_uploader = this.uploaders[0].name;
     }
+
     this.autoCopy = window.utils.db('autoCopy')||false;
     this.list = this.getShareList();
     this.initConfig = true;
 
 
     utools.onPluginEnter(({code, type, payload, optional}) => {
-      if (type === "files") this.uploads(payload);
-
       console.log('用户进入插件', code, type, payload)
+
+      if (type === "files") this.uploads(payload);
     })
   },
   methods:{
     async uploadRequest(params){
       await this.upload(params.file)
     },
-    async uploads(payload){
-      for(let fileObj of payload){
-        let file = window.utils.readFile(fileObj);
-        await this.upload(file);
-      }
+    async uploads(files){
+      setTimeout(async ()=>{
+        for(let fileObject of files){
+          console.log('readfile before',Date.now());
+          let file = window.utils.readFile(fileObject);
+          console.log('readfile after',Date.now());
+          await this.upload(file);
+        }
+      },100);
     },
     async upload(file){
       const loading = this.$loading({

@@ -9,9 +9,11 @@
   "dependencies": {
     "axios": "^0.21.0",
     "core-js": "^3.6.5",
+    "cos-js-sdk-v5": "^1.4.6",
     "element-ui": "^2.4.5",
     "md5": "^2.3.0",
     "mime-types": "^2.1.27",
+    "request": "^2.88.2",
     "vue": "^2.6.11"
   },
   "devDependencies": {
