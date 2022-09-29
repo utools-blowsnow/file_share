@@ -7,6 +7,7 @@
     "build": "vue-cli-service build"
   },
   "dependencies": {
+    "ali-oss": "^6.17.1",
     "axios": "^0.21.0",
     "core-js": "^3.6.5",
     "cos-js-sdk-v5": "^1.4.6",
@@ -14,6 +15,8 @@
     "md5": "^2.3.0",
     "mime-types": "^2.1.27",
     "request": "^2.88.2",
+    "sass-loader": "^13.0.2",
+    "utility": "^1.17.0",
     "vue": "^2.6.11"
   },
   "devDependencies": {

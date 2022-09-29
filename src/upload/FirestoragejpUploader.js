@@ -76,6 +76,8 @@ export default class FirestoragejpUploader extends IUploader{
         return "firestoragejp";
     }
 
+    static order(){ return 9;}
+
     static config(){
         return [
             {label: "有效期", name: "expire", type: "select" ,value: 8, options: [

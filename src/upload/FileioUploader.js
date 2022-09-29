@@ -26,6 +26,8 @@ class FileioUploader extends IUploader{
         return "fileio";
     }
 
+    static order(){ return 10;}
+
     static config(){
         return [
             {label: "有效期(天)", name: "expire", type: "number", min: 1,value: "7"}

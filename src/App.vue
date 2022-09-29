@@ -13,47 +13,51 @@
       <div class="left-box">
         <div class="span">
           上传源：
-          <el-select placeholder="请选择" size="mini" v-model="active_uploader" @change="changeActiveApi">
+          <el-select placeholder="请选择" size="mini" v-model="activeUploaderName" @change="changeActiveUploader">
             <el-option v-for="uploader in uploaders" :label="uploader.label" :value="uploader.name"></el-option>
           </el-select>
         </div>
         <el-checkbox class="span" v-model="autoCopy">自动复制</el-checkbox>
-        <el-button v-if="nowUploader && nowUploader.configParameters" size="mini" icon="el-icon-setting" type="primary" class="skin-button" @click="openUploadConfigDialog">设置</el-button>
+        <el-button v-if="uploader && uploader.configParameters" size="mini" icon="el-icon-setting" type="primary" class="skin-button" @click="openUploadConfigDialog">设置</el-button>
       </div>
       <div class="right-box" >
         <el-button size="mini" type="danger" icon="el-icon-delete" class="skin-button" @click="clearShare">清空</el-button>
       </div>
       <div class="clearfix"></div>
     </div>
+
     <share-list :list="list" @remove="removeShare"></share-list>
 
-    <el-dialog title="配置" :visible.sync="dialogTableVisible" width="70%">
-      <el-form v-if="nowUploader" ref="form" label-width="80px">
-        <el-form-item v-for="configParameter in nowUploader.configParameters" :label="configParameter.label">
+
+    <el-dialog title="配置" :visible.sync="dialogVisible" width="70%">
+      <el-form v-if="uploader" ref="form" label-width="80px">
+        <el-form-item v-for="configParameter in uploader.configParameters" :label="configParameter.label">
           <template v-if="configParameter.type === 'select'">
-            <el-select size="mini"  v-model="nowUploader.config[configParameter.name]">
+            <el-select size="mini"  v-model="uploader.config[configParameter.name]">
               <el-option v-for="option in configParameter.options" :label="option.label" :value="option.value"></el-option>
             </el-select>
           </template>
           <template v-else-if="configParameter.type === 'number'">
-            <el-input-number size="mini" v-model="nowUploader.config[configParameter.name]" :min="configParameter.min === undefined ?1: 0" :max="configParameter.max||99999"></el-input-number>
+            <el-input-number size="mini" v-model="uploader.config[configParameter.name]" :min="configParameter.min === undefined ?1: 0" :max="configParameter.max||99999"></el-input-number>
           </template>
           <template v-else-if="configParameter.type === 'button'">
-            <el-button size="mini" @click="configParameter.handle($event,nowUploader)">{{configParameter.label}}</el-button>
+            <el-button size="mini" @click="configParameter.handle($event,uploader)">{{configParameter.label}}</el-button>
           </template>
           <template v-else-if="configParameter.type === 'tip'">
             <div v-html="configParameter.value"></div>
           </template>
           <template v-else>
-            <el-input size="mini"  v-model="nowUploader.config[configParameter.name]"></el-input>
+            <el-input size="mini"  v-model="uploader.config[configParameter.name]"></el-input>
           </template>
         </el-form-item>
       </el-form>
     </el-dialog>
+
   </div>
 </template>
 
 <script>
+import ConfigDialog from "@/dialog/ConfigDialog";
 const uploaders = require('./plugins/uploaders').default;
 for(let uploader of uploaders){
   uploader.config = {};
@@ -63,32 +67,45 @@ for(let uploader of uploaders){
     }
   }
 }
+
 console.log(uploaders);
+
+// 根据order排序 倒序
+uploaders.sort((a,b)=>{
+  return b.order - a.order;
+
+});
 
 import ShareList from "@/components/ShareList";
 import IUploader from "@/upload/IUploader";
 import UploadException from "@/upload/exception/UploadException";
 export default {
   name: 'app',
-  components: {ShareList},
+  components: {ConfigDialog, ShareList},
   data(){
     return {
+      // 上传源列表
       uploaders: uploaders,
-      active_uploader: "CowtransferUploader",
+
+      activeUploaderName: "CowtransferUploader",
+
+      // 上传历史列表
       list: [],
 
-      dialogTableVisible: false,
+      // 弹窗显示
+      dialogVisible: false,
+
 
       initConfig: false,
       autoCopy: false
     }
   },
   watch:{
-    'nowUploader.config':{
+    'uploader.config':{
       handler(n,o){
         if (this.initConfig === false) return;
         //保存配置
-        window.utils.db("uploader_config_" + this.nowUploader.name,this.nowUploader.config);
+        window.utils.db("uploader_config_" + this.uploader.name,this.uploader.config);
       },
       // immediate: true,  //刷新加载 立马触发一次handler
       deep: true
@@ -98,9 +115,9 @@ export default {
     }
   },
   computed:{
-    nowUploader(){
+    uploader(){
       for(let uploader of this.uploaders){
-        if (uploader.name === this.active_uploader){
+        if (uploader.name === this.activeUploaderName){
           return uploader;
         }
       }
@@ -109,12 +126,12 @@ export default {
   },
   mounted(){
     if (window.utils.db("active_uploader")){
-      this.active_uploader = window.utils.db("active_uploader");
+      this.activeUploaderName = window.utils.db("active_uploader");
 
       // 加载配置
-      this.changeActiveApi();
+      this.changeActiveUploader();
     }else{
-      this.active_uploader = this.uploaders[0].name;
+      this.activeUploaderName = this.uploaders[0].name;
     }
 
     this.autoCopy = window.utils.db('autoCopy')||false;
@@ -129,21 +146,54 @@ export default {
     })
   },
   methods:{
+    /**
+     * 修改激活的上传器
+     */
+    changeActiveUploader(){
+      window.utils.db("active_uploader",this.activeUploaderName);
+
+      let uploaderConfig = window.utils.db("uploader_config_" + this.uploader.name);
+      if (uploaderConfig){
+        this.uploader.config = {
+          ...this.uploader.config,
+          ...uploaderConfig
+        }
+      }
+    },
+    /**
+     * 打开上传配置对话框
+     */
+    openUploadConfigDialog(){
+      this.dialogVisible = true;
+    },
+
+    /**
+     * 上传请求处理
+     * @param params
+     * @returns {Promise<void>}
+     */
     async uploadRequest(params){
       await this.upload(params.file)
     },
+    /**
+     * 批量上传
+     * @param files
+     * @returns {Promise<void>}
+     */
     async uploads(files){
-      setTimeout(async ()=>{
-        for(let fileObject of files){
-          console.log('readfile before',Date.now());
-          let file = window.utils.readFile(fileObject);
-          console.log('readfile after',Date.now());
-          await this.upload(file);
-        }
-      },100);
+      for(let fileObject of files){
+        let file = window.utils.readFile(fileObject);
+        await this.upload(file);
+      }
     },
+    /**
+     * 上传文件
+     * @param file
+     * @returns {Promise<void>}
+     */
     async upload(file){
       window.utools.showMainWindow()
+
       const loading = this.$loading({
         lock: true,
         text: '正在上传 ' + file.name,
@@ -152,18 +202,15 @@ export default {
       });
 
       try {
-        var info = await this.nowUploader.instance.upload(file,this.nowUploader.config,(progress) => {
+        var info = await this.uploader.instance.upload(file,this.uploader.config,(progress) => {
           console.log(loading);
           loading.setText('正在上传 ' + file.name + ' ' + parseInt(progress) + '%');
         });
       }catch (e){
-        console.log(e);
         this.$message.error(e.message);
         return;
       }finally {
-        this.$nextTick(() => { // 以服务的方式调用的 Loading 需要异步关闭
-          loading.close();
-        });
+        loading.close();
       }
       if (typeof info === "string"){
         info = {
@@ -173,33 +220,23 @@ export default {
       }
 
       info.uploader = {
-        name: this.nowUploader.name,
-        label: this.nowUploader.label
+        name: this.uploader.name,
+        label: this.uploader.label
       }
 
       this.addShare(info,file);
 
       if (this.autoCopy){
-        window.utils.clipboard.writeText(info.url);
+        window.utools.copyText(info.url);
       }
     },
 
-    changeActiveApi(){
-      window.utils.db("active_uploader",this.active_uploader);
 
-      let uploaderConfig = window.utils.db("uploader_config_" + this.nowUploader.name);
-      if (uploaderConfig){
-        this.nowUploader.config = {
-          ...this.nowUploader.config,
-          ...uploaderConfig
-        }
-      }
-    },
-
-    openUploadConfigDialog(){
-      this.dialogTableVisible = true;
-    },
-
+    /**
+     * 添加分享
+     * @param info
+     * @param file
+     */
     addShare(info,file){
       let item = {
         ...info,
@@ -215,17 +252,30 @@ export default {
       }
       window.utils.db("share_list",this.list);
     },
+
+    /**
+     * 获取分享列表
+     * @returns {*|*[]}
+     */
+    getShareList(){
+      return window.utils.db("share_list") || [];
+    },
+
+    /**
+     * 删除分享
+     * @param index
+     */
     removeShare(index){
       this.list.splice(index,1);
       window.utils.db("share_list",this.list);
     },
+    /**
+     * 清空分享列表
+     */
     clearShare(){
       this.list = [];
       window.utils.db("share_list",this.list);
     },
-    getShareList(){
-      return window.utils.db("share_list") || [];
-    }
   }
 }
 </script>

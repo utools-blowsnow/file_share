@@ -12,6 +12,7 @@ for(let file of files){
         modules.push({
             instance: cls,
             name: name,
+            order: cls.order(),
             label: cls.name(),
             configParameters: cls.config()
         })

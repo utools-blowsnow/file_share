@@ -27,6 +27,12 @@ class IUploader{
      */
     static config(){}
 
+    /**
+     * 排序
+     * @returns {number}
+     */
+    static order(){ return 0;}
+
     static uploadStream(url,file,method='post',params={},progressCallback=false){
         let reader = new FileReader();
         reader.readAsArrayBuffer(file);//安字节读取文件并存储至二进制缓存区
