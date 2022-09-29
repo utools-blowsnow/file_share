@@ -5,8 +5,11 @@ import UploadException from './exception/UploadException'
 
 export default class ExampleUploader extends IUploader{
 
-    static async upload(file,config=false) {
-
+    static async upload(file,config=false,progressCallback=false) {
+        return {
+            url: null,
+            expire: null
+        };
     }
 
     static name(){
