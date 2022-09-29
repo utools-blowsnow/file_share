@@ -42,7 +42,7 @@ export default {
   },
   methods:{
     copy(text){
-      window.utils.clipboard.writeText(text);
+      window.utools.copyText(text);
       this.$message.success("复制成功");
     },
     remove(){

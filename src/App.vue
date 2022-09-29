@@ -27,7 +27,7 @@
     </div>
     <share-list :list="list" @remove="removeShare"></share-list>
 
-    <el-dialog title="配置" :visible.sync="dialogTableVisible">
+    <el-dialog title="配置" :visible.sync="dialogTableVisible" width="70%">
       <el-form v-if="nowUploader" ref="form" label-width="80px">
         <el-form-item v-for="configParameter in nowUploader.configParameters" :label="configParameter.label">
           <template v-if="configParameter.type === 'select'">
@@ -143,6 +143,7 @@ export default {
       },100);
     },
     async upload(file){
+      window.utools.showMainWindow()
       const loading = this.$loading({
         lock: true,
         text: '正在上传 ' + file.name,
