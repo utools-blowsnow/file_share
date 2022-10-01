@@ -25,7 +25,7 @@ class IUploader{
      * select 下需要配置 options
      * {label: "有效期(天)", name: "expire", type: "number", min: 1,value: "7"}
      */
-    static config(){}
+    static config(){ return false; }
 
     /**
      * 排序
@@ -33,16 +33,12 @@ class IUploader{
      */
     static order(){ return 0;}
 
-    static uploadStream(url,file,method='post',params={},progressCallback=false){
-        let reader = new FileReader();
-        reader.readAsArrayBuffer(file);//安字节读取文件并存储至二进制缓存区
-        return new Promise((resolve, reject) => {
-            reader.onload = async function (e) {
-                let result = new Uint8Array(e.target.result);
-                let res2 = await IUploader._upload(url,method,result,params,progressCallback);
-                resolve(res2);
-            }
-        })
+    static async uploadStream(url,file,method='post',params={},progressCallback=false){
+        let buffer = Buffer.from(await this._fileToBuffer(file));
+
+        console.log(buffer);
+
+        return this._upload(url, method, buffer, params, progressCallback);
     }
 
     static _upload(url,method='post',data,params={},progressCallback=false){
@@ -62,6 +58,11 @@ class IUploader{
 
     static _uploadFormData(url,data,progressCallback=false){
         return this._upload(url,'post',data,{},progressCallback);
+    }
+
+
+    static async _fileToBuffer(file){
+        return new Uint16Array(await file.arrayBuffer())
     }
 }
 

@@ -58,7 +58,9 @@
 
 <script>
 import ConfigDialog from "@/dialog/ConfigDialog";
+import ShareList from "@/components/ShareList";
 const uploaders = require('./plugins/uploaders').default;
+
 for(let uploader of uploaders){
   uploader.config = {};
   if (uploader.configParameters){
@@ -68,7 +70,6 @@ for(let uploader of uploaders){
   }
 }
 
-console.log(uploaders);
 
 // 根据order排序 倒序
 uploaders.sort((a,b)=>{
@@ -76,9 +77,7 @@ uploaders.sort((a,b)=>{
 
 });
 
-import ShareList from "@/components/ShareList";
-import IUploader from "@/upload/IUploader";
-import UploadException from "@/upload/exception/UploadException";
+
 export default {
   name: 'app',
   components: {ConfigDialog, ShareList},
@@ -139,10 +138,15 @@ export default {
     this.initConfig = true;
 
 
-    utools.onPluginEnter(({code, type, payload, optional}) => {
+    window.utools.onPluginEnter(({code, type, payload, optional}) => {
       console.log('用户进入插件', code, type, payload)
 
-      if (type === "files") this.uploads(payload);
+      if (type === "files") {
+
+        this.$nextTick(()=>{
+          this.uploads(payload);
+        });
+      }
     })
   },
   methods:{
@@ -182,8 +186,12 @@ export default {
      */
     async uploads(files){
       for(let fileObject of files){
-        let file = window.utils.readFile(fileObject);
-        await this.upload(file);
+        try {
+          let file = window.utils.readFile(fileObject);
+          await this.upload(file);
+        }catch (e){
+          utools.showNotification('uploads files error：' + e.message)
+        }
       }
     },
     /**
@@ -207,6 +215,7 @@ export default {
           loading.setText('正在上传 ' + file.name + ' ' + parseInt(progress) + '%');
         });
       }catch (e){
+        console.error(e);
         this.$message.error(e.message);
         return;
       }finally {

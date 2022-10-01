@@ -5,8 +5,11 @@
     <div class="time">{{ format(item.time) }}</div>
     <div class="expire_time">{{ expire_time === -1 ? '无过期时间' :format(expire_time) }}</div>
     <div class="mask">
-      <a @click="copy(item.url)">URL</a> |
-      <a @click="remove">删除</a>
+      <div v-if="item.uploader" class="url" style="margin-bottom: 5px;">{{ item.uploader.label }}</div>
+      <div class="handle">
+        <a @click="copy(item.url)">URL</a> |
+        <a @click="remove">删除</a>
+      </div>
     </div>
   </div>
 </template>
@@ -46,7 +49,9 @@ export default {
       this.$message.success("复制成功");
     },
     remove(){
-      this.$emit('remove');
+      this.$confirm("是否确认删除？", '确认信息').then(() => {
+        this.$emit('remove');
+      });
     }
   }
 }
@@ -78,6 +83,7 @@ export default {
   top: 0;
   left: 0;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   /*opacity: 0.2;*/

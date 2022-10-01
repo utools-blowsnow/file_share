@@ -1,99 +1,33 @@
-const { ipcRenderer, remote, clipboard, shell,dialog } = require('electron')
 const fs = require('fs')
-const path = require('path')
-const process = require('process');
-const axios = require("axios");
-
-window.inUtools = true;
+const request = require("request");
+const axios = require('axios')
+const needle = require("needle");
 window.utils = {
-    clipboard: {
-    writeText: (text) => {
-      clipboard.writeText(text)
-    }
-    },
-    showDialog: (type,title,message,buttons,callback) => {
-    dialog.showMessageBox({
-    type: type,
-    title: title,
-    message: message,
-    buttons: buttons
-    },callback);
-    },
-    showOpenDialog: (name='文件',extensions=[]) => {
-    return dialog.showOpenDialog(remote.getCurrentWindow(), { filters: [{ 'name': name, extensions: extensions }], properties: ['openFile'] })
-    },
-    showMssage:(text,title='utools')=>{
-    notifier.notify(
-     {
-       title: title,
-       subtitle: 'utools',
-       message: text,
-       sound: true,
-       wait: true
-     },
-     function (err, response) {
-       if (err) {
-         console.log(err)
-       }
-     }
-    )
-    },
-    openExternal: shell.openExternal,
-    readFile:(pathObj)=>{
-      var buffer = fs.readFileSync(pathObj.path);
-      class MyFile extends File{
-          setPath(path){
-              this.temp_path = path;
-          }
-      }
-      var file = new MyFile([buffer],pathObj.name);
-      file.setPath(pathObj.path);
-      return file;
-    },
-    readFileA:(pathObj)=>{
-        class MyFile extends File{
-            setPath(path){
+    readFile: (pathObj) => {
+        var buffer = fs.readFileSync(pathObj.path,{
+            encoding: 'binary'
+        });
+
+        console.log("buffer",buffer);
+
+        class MyFile extends File {
+            setPath(path) {
                 this.temp_path = path;
             }
         }
-        console.log('load ',pathObj);
-        return new Promise((resolve,reject)=>{
-            console.log(pathObj.path);
-            fs.readFile(pathObj.path,(err,bitmap)=>{
-                if (err) reject(err);
-                var file = new MyFile(bitmap,pathObj.name);
-                file.setPath(pathObj.path);
-                resolve(file);
-            });
-        })
+
+        var file = new MyFile([buffer], pathObj.name);
+        file.setPath(pathObj.path);
+        return file;
     },
-    createReadStream(path){
-        return fs.createReadStream(path)
-    },
-    createWriteStream(path){
-        return fs.createWriteStream(path)
-    },
-    openDefaultBrowser: function (url) {
-    var exec = require('child_process').exec;
-    switch (process.platform) {
-      case "darwin":
-        exec('open ' + url);
-        break;
-      case "win32":
-        exec('start ' + url);
-        break;
-      default:
-        exec('xdg-open', [url]);
-    }
-    },
-    db: function(name,value=undefined){
+    db: function (name, value = undefined) {
         let obj = utools.db.get(name);
-        if (value !== undefined){
+        if (value !== undefined) {
             let putdata = {
                 _id: name,
                 data: value,
             }
-            if (obj && obj._rev){
+            if (obj && obj._rev) {
                 putdata._rev = obj._rev;
             }
             utools.db.put(putdata)
@@ -102,22 +36,51 @@ window.utils = {
         if (obj == null) return null;
         return obj.data;
     },
-    request(params={}){
-        var request = require('request');
-        return new Promise((resolve,reject) => {
-            request(params, function(error, response, body) {
-                if (error !== null) reject(error);
-                resolve(response);
-            });
+    // request(params = {},form=false) {
+    //     params.proxy = 'http://127.0.0.1:8888'
+    //
+    //     return new Promise((resolve,reject) => {
+    //         console.log(params);
+    //         let res = request(params.url,params, function(error, response, body) {
+    //             if (error !== null) reject(error);
+    //             resolve(response);
+    //         });
+    //
+    //         if (form) {
+    //             form(res.form());
+    //         }
+    //     })
+    // },
+    request(params) {
+        const needle = require('needle');
+        needle.defaults({
+            proxy: 'http://127.0.0.1:8888',
+            user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36 Edg/105.0.1343.53"
         })
-    },
-    formdata(){
-        const FormData = require('form-data');
-        return new FormData();
-    }
-}
-window.request = (params) => {
-    const request = require("request-promise");
 
-    return request(params);
-};
+        // 转换下data
+        if (params.data instanceof FormData) {
+            let obj = {};
+            params.data.forEach((value, key) => {
+                obj[key] = value;
+            })
+            params.encoding = 'binary';
+            params.data = obj;
+            params.multipart = true;
+            // 生成 10个随机字符
+            params.boundary = "--------------------" + Math.random().toString(36).substr(2, 10)
+        }
+
+        console.log(params);
+
+        return needle(params.method,params.url, params.data, params);
+    }
+
+}
+
+var logger = require('simple-node-logger').createSimpleLogger('D:\\project.log');
+var tempLog = console.log;
+// window.console.log = (...args) => {
+//     tempLog.apply(console, args);
+//     logger.info(...args);
+// };

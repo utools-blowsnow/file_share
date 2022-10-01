@@ -10,38 +10,27 @@ export default class LanzouCosUploader extends IUploader{
             'Cookie': config.cookie
         }
 
-        console.log(headers);
+        console.log(headers,file);
 
-        let formData = new FormData();
+        let buffer = Buffer.from(await file.arrayBuffer());
+        const FormDatas = require('form-data');
+        let formData = new FormDatas();
         formData.append("task","1");
         formData.append("ve","2");
-        formData.append("id","WU_FILE_1");
+        formData.append("id","WU_FILE_0");
         formData.append("name",file.name);
         formData.append("type",file.type);
         formData.append("size",file.size);
-        formData.append("upload_file",file);
+        formData.append("upload_file", buffer);
 
-        // formData 转对象
-        let obj = {};
-        for (let key of formData.keys()) {
-            obj[key] = formData.get(key);
-        }
-
-        let result = await axios('http://pc.woozooo.com/fileup.php',{
+        let result = await window.utils.request({
+            url: 'http://pc.woozooo.com/fileup.php',
             method: "post",
-            body: formData,
-            headers: {
-                'Content-type': 'multipart/form-data',
-                ...headers
-            },
+            data: formData,
+            headers: headers,
             onUploadProgress: function (progressEvent) { //原生获取上传进度的事件
-                if (progressEvent.lengthComputable) {
-                    progressCallback && progressCallback(progressEvent.loaded / progressEvent.total * 100);
-                }
+                progressCallback(progressEvent.loaded / progressEvent.total);
             }
-        }, (res) => {
-            // Do stuff with response
-            console.log(res);
         });
 
         console.log("fileup",result);
@@ -52,7 +41,7 @@ export default class LanzouCosUploader extends IUploader{
 
         let id = result.text[0].id;
 
-        let shareResult = await axios({
+        let shareResult = await window.utils.request({
             url: "https://pc.woozooo.com/doupload.php",
             method: "post",
             data: {

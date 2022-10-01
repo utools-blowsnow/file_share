@@ -1,31 +1,34 @@
 import IUploader from '../IUploader'
-import axios from 'axios'
-import Qs from 'qs'
 import UploadException from '../exception/UploadException'
+import axios from "axios";
 
 export default class YoudaoUploader extends IUploader{
 
-    static async request(params){
-        let res = await window.utils.request(params);
-        console.log(res);
-        return {
-            ...res,
-            data: res.body === "" ? "" : JSON.parse(res.body),
-            proxy: "http://127.0.0.1:8888",
-            rejectUnauthorized: false,
-        }
+    static _upload(url,method='post',data,params={},progressCallback=false){
+        return window.utils.request({
+            url: url,
+            method: method,
+            body: data,
+            ...params,
+            onUploadProgress: function (progressEvent) { //原生获取上传进度的事件
+                console.log(progressEvent);
+                if (progressEvent.lengthComputable) {
+                    progressCallback && progressCallback(progressEvent.loaded / progressEvent.total * 100);
+                }
+            }
+        });
     }
 
     static async upload(file,config=false,progressCallback=false) {
         let expire = config.expire || 7;
         let headers = {
-            'Cookie': YoudaoUploader.cookie
+            'Cookie': config.cookie
         }
 
         // https://note.youdao.com/yws/api/personal/sync/upload?keyfrom=web
         // cstk=2TGyUIBN
-        let res = await this.request({
-            url: 'https://note.youdao.com/yws/api/personal/sync/upload?keyfrom=web',
+        let res = await window.utils.request({
+            url: 'https://note.youdao.com/yws/api/personal/sync/upload?cstk=u0EdSKkX',
             method: 'post',
             body: "",
             headers: {
@@ -33,35 +36,28 @@ export default class YoudaoUploader extends IUploader{
                 'File-Size': file.size
             }
         })
-        if (res.data.error){
-            if (res.data.error === "207" && !config.retry){  //未登录
-                //尝试登录
-                let times = 1;
 
-                return this.upload(file,{
-                    ...config,
-                    retry: true
-                });
-            }
-            throw new UploadException(res.data.message);
-        }
+        let data = res.body === "" ? "" : JSON.parse(res.body);
+
+        let transmitId = data.transmitId;
+
         console.log(res);
 
         // https://note.youdao.com/yws/api/personal/sync/upload/160465771822378CA?cstk=2TGyUIBN
         // application/x-zip-compressed
-        let res2 = await this.uploadStream('https://note.youdao.com/yws/api/personal/sync/upload/' + res.data.transmitId,file,'post',{
+        let res2 = await this.uploadStream('https://note.youdao.com/yws/api/personal/sync/upload/' + transmitId + "?cstk=u0EdSKkX",file,'post',{
             headers: {
                 ...headers,
-                'Content-Type': 'application/x-zip-compressed'
             }
         },progressCallback)
         console.log(res2);
 
+
         var md5 = require('md5');
-        let fileId = "WEB" + md5(res.data.transmitId);
+        let fileId = "WEB" + md5(transmitId);
 
         var sync = async ()=>{
-            let url = 'https://note.youdao.com/yws/api/personal/sync?method=push&fileId='+fileId+'&domain=1&parentId=SVRE1C8FE10C8594E07A84EE45C1048ED18&transmitId='+res.data.transmitId+'&rootVersion=-1&sessionId=&dir=false&createTime=1604657717&modifyTime=1604657717&transactionId='+fileId+'&transactionTime=1604657717&editorVersion=1601177355000&keyfrom=web&name=' + encodeURI(file.name);
+            let url = 'https://note.youdao.com/yws/api/personal/sync?method=push&fileId='+fileId+'&domain=1&parentId=SVRE1C8FE10C8594E07A84EE45C1048ED18&transmitId='+transmitId+'&rootVersion=-1&sessionId=&dir=false&createTime=1604657717&modifyTime=1604657717&transactionId='+fileId+'&transactionTime=1604657717&editorVersion=1601177355000&keyfrom=web&name=' + encodeURI(file.name);
             return await this.request({
                 url: url,
                 method: 'post',
@@ -105,20 +101,25 @@ export default class YoudaoUploader extends IUploader{
 
 
     static async login(){
-        var ubrowser = await utools.ubrowser.goto('https://note.youdao.com/web')
+        var result = await utools.ubrowser.goto('https://note.youdao.com/web')
             .devTools('detach')
-            .wait(() => {
-                console.log(document.cookie);
-                setInterval(()=>{
-                    console.log(document.cookie);
-                },1000)
-                return true;
-            },60000)
+            .when(() => document.cookie.includes("YNOTE_LOGIN"))
+            .end()
+            .evaluate(() => document.cookie)
             .run({ width: 1000, height: 600 })
 
-        console.log(ubrowser);
+        let cookie;
 
-        return ubrowser;
+        if (result.length > 0) {
+
+            cookie = result[0];
+
+            utools.showNotification('有道云登陆成功')
+        }
+
+        console.log('登陆成功',cookie);
+
+        return cookie;
     }
 
     static name(){
@@ -127,9 +128,10 @@ export default class YoudaoUploader extends IUploader{
 
     static config(){
         return [
-            {label: "登录", name: "expire", type: "button",handle: async () =>{
-                    this.login();
+            {label: "登录", name: "expire", type: "button",handle: async (event,uploader) =>{
+                    uploader.config.cookie = await this.login();
             }},
+            {label: "登录后的cookie", name: "cookie", type: "text"},
             {label: "有效期(天)", name: "expire", type: "number", min: 1,value: "7"}
         ];
     }
