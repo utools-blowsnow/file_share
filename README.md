@@ -1,12 +1,12 @@
 
 
 # 多源文件上传
-[x] file.io
-[x] firestorage.jp
-[x] transfer.sh
-[x] 腾讯云对象存储
-[x] 阿里云对象存储
-[x] 七牛云对象存储
+- [x] file.io
+- [x] firestorage.jp
+- [x] transfer.sh
+- [x] 腾讯云对象存储
+- [x] 阿里云对象存储
+- [x] 七牛云对象存储
 
 
 # 添加源
