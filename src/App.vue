@@ -29,8 +29,8 @@
     <share-list :list="list" @remove="removeShare"></share-list>
 
 
-    <el-dialog title="配置" :visible.sync="dialogVisible" width="70%">
-      <el-form v-if="uploader" ref="form" label-width="80px">
+    <el-dialog title="配置" :visible.sync="dialogVisible" width="80%">
+      <el-form v-if="uploader" ref="form" label-width="150px">
         <el-form-item v-for="configParameter in uploader.configParameters" :label="configParameter.label">
           <template v-if="configParameter.type === 'select'">
             <el-select size="mini"  v-model="uploader.config[configParameter.name]">
@@ -190,6 +190,7 @@ export default {
           let file = window.utils.readFile(fileObject);
           await this.upload(file);
         }catch (e){
+          console.error(e);
           utools.showNotification('uploads files error：' + e.message)
         }
       }

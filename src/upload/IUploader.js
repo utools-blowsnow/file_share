@@ -9,7 +9,7 @@ class IUploader{
      * @param file 文件
      * @param config 配置
      * @param progressCallback 进度回调
-     * @return {url,expire}
+     * @return {url,expire}  expire 为过期时间 秒
      */
     static upload(file,config=false,progressCallback=false){}
 

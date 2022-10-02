@@ -1,14 +1,8 @@
 const fs = require('fs')
-const request = require("request");
-const axios = require('axios')
-const needle = require("needle");
+
 window.utils = {
     readFile: (pathObj) => {
-        var buffer = fs.readFileSync(pathObj.path,{
-            encoding: 'binary'
-        });
-
-        console.log("buffer",buffer);
+        var buffer = fs.readFileSync(pathObj.path);
 
         class MyFile extends File {
             setPath(path) {
