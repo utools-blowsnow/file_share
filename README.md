@@ -1,6 +1,7 @@
 
 
 # 多源文件上传
+- [x] catbox.moe
 - [x] file.io
 - [x] firestorage.jp
 - [x] transfer.sh

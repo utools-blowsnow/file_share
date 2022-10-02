@@ -29,29 +29,39 @@
     <share-list :list="list" @remove="removeShare"></share-list>
 
 
-    <el-dialog title="配置" :visible.sync="dialogVisible" width="80%">
-      <el-form v-if="uploader" ref="form" label-width="150px">
-        <el-form-item v-for="configParameter in uploader.configParameters" :label="configParameter.label">
-          <template v-if="configParameter.type === 'select'">
-            <el-select size="mini"  v-model="uploader.config[configParameter.name]">
-              <el-option v-for="option in configParameter.options" :label="option.label" :value="option.value"></el-option>
-            </el-select>
-          </template>
-          <template v-else-if="configParameter.type === 'number'">
-            <el-input-number size="mini" v-model="uploader.config[configParameter.name]" :min="configParameter.min === undefined ?1: 0" :max="configParameter.max||99999"></el-input-number>
-          </template>
-          <template v-else-if="configParameter.type === 'button'">
-            <el-button size="mini" @click="configParameter.handle($event,uploader)">{{configParameter.label}}</el-button>
-          </template>
-          <template v-else-if="configParameter.type === 'tip'">
-            <div v-html="configParameter.value"></div>
-          </template>
-          <template v-else>
-            <el-input size="mini"  v-model="uploader.config[configParameter.name]"></el-input>
-          </template>
-        </el-form-item>
+    <el-drawer
+        title="配置 - 修改自动保存"
+        :visible.sync="dialogVisible"
+        size="100%"
+        direction="rtl">
+      <el-form v-if="uploader" ref="form" label-width="150px" style="padding-right: 50px;">
+        <template v-for="configParameter in uploader.configParameters">
+          <el-form-item v-if="configParameter.type === 'tip'" :label="configParameter.label" style="margin: 0;">
+            <div style="color: rgb(177 177 177)" v-html="configParameter.value"></div>
+          </el-form-item>
+          <el-form-item v-else :label="configParameter.label">
+            <template v-if="configParameter.type === 'select'">
+              <el-select size="mini"  v-model="uploader.config[configParameter.name]">
+                <el-option v-for="option in configParameter.options" :label="option.label" :value="option.value"></el-option>
+              </el-select>
+            </template>
+            <template v-else-if="configParameter.type === 'number'">
+              <el-input-number size="mini" v-model="uploader.config[configParameter.name]" :min="configParameter.min === undefined ?1: 0" :max="configParameter.max||99999"></el-input-number>
+            </template>
+            <template v-else-if="configParameter.type === 'button'">
+              <el-button size="mini" @click="configParameter.handle($event,uploader)">{{configParameter.label}}</el-button>
+            </template>
+            <template v-else>
+              <el-input size="mini"  v-model="uploader.config[configParameter.name]"></el-input>
+            </template>
+          </el-form-item>
+        </template>
       </el-form>
-    </el-dialog>
+    </el-drawer>
+
+<!--    <el-dialog title="配置" :visible.sync="dialogVisible" width="80%">-->
+<!--      -->
+<!--    </el-dialog>-->
 
   </div>
 </template>
@@ -294,6 +304,12 @@ export default {
 .skin-button{
   background: #f57681!important;
   border: #f57681!important;
+}
+.el-drawer__header{
+  background: #f57681;
+  color: #fff;
+  margin-bottom: 30px;
+  padding-bottom: 20px;
 }
 .upload-box{
   .el-upload{
