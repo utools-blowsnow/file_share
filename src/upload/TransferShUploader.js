@@ -28,7 +28,7 @@ export default class ExampleUploader extends IUploader{
 
         return {
             url: data,
-            expire: config.maxDay * 24 * 60 * 60
+            expire: config.maxDay ? config.maxDay * 24 * 60 * 60 : null
         };
     }
 
