@@ -1,5 +1,7 @@
 const fs = require('fs')
+const request = require("request");
 
+const FormData = require('form-data');
 window.utils = {
     readFile: (pathObj) => {
         var buffer = fs.readFileSync(pathObj.path);
@@ -9,10 +11,16 @@ window.utils = {
                 this.temp_path = path;
             }
         }
-
-        var file = new MyFile([buffer], pathObj.name);
+        const mime = require('mime/lite');
+        var file = new MyFile([buffer], pathObj.name,{
+            type: mime.getType(pathObj.path),
+            path: pathObj.path
+        });
         file.setPath(pathObj.path);
         return file;
+    },
+    createReadStream: (path) => {
+        return fs.createReadStream(path);
     },
     db: function (name, value = undefined) {
         let obj = utools.db.get(name);
@@ -30,44 +38,38 @@ window.utils = {
         if (obj == null) return null;
         return obj.data;
     },
-    // request(params = {},form=false) {
-    //     params.proxy = 'http://127.0.0.1:8888'
-    //
-    //     return new Promise((resolve,reject) => {
-    //         console.log(params);
-    //         let res = request(params.url,params, function(error, response, body) {
-    //             if (error !== null) reject(error);
-    //             resolve(response);
-    //         });
-    //
-    //         if (form) {
-    //             form(res.form());
-    //         }
-    //     })
-    // },
     request(params) {
-        const needle = require('needle');
-        needle.defaults({
-            proxy: 'http://127.0.0.1:8888',
-            user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36 Edg/105.0.1343.53"
-        })
-
-        // 转换下data
-        if (params.data instanceof FormData) {
-            let obj = {};
-            params.data.forEach((value, key) => {
-                obj[key] = value;
-            })
-            params.encoding = 'binary';
-            params.data = obj;
-            params.multipart = true;
-            // 生成 10个随机字符
-            params.boundary = "--------------------" + Math.random().toString(36).substr(2, 10)
-        }
+        params.proxy = 'http://127.0.0.1:8888';
 
         console.log(params);
 
-        return needle(params.method,params.url, params.data, params);
+        return new Promise((resolve, reject) => {
+            request(params,function(err,httpResponse,body){
+                if (err) {
+                    reject(err);
+                } else {
+                    console.log(httpResponse);
+                    let data = JSON.parse(body) ?? body;
+                    resolve(data);
+                }
+            })
+        })
+    },
+    requestFormData(params,formDatas) {
+        let formData = new FormData();
+        Object.keys(formDatas).forEach(key => {
+          let value = formDatas[key];
+            if (value instanceof Object) {
+                formData.append(key, value.value, value.options.filename);
+            }else{
+                formData.append(key,value);
+            }
+        })
+
+        params.body = formData.getBuffer();
+        params.headers = params.headers || {};
+        params.headers['Content-Type'] = 'multipart/form-data; boundary=' + formData.getBoundary();
+        return this.request(params);
     }
 
 }

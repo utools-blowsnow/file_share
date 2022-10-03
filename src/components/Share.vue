@@ -73,6 +73,9 @@ export default {
       padding: 5px;
     }
   }
+  .name{
+    white-space: nowrap;
+  }
 }
 .Share:hover .mask{
   background: #ffa4ac;

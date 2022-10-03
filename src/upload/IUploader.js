@@ -20,9 +20,15 @@ class IUploader{
     static name(){}
 
     /**
+     * 初始化配置
+     * @param uploader
+     */
+    static init(uploader){};
+
+    /**
      * 上传组件的配置
      * type 支持 select, text, number, button
-     * select 下需要配置 options
+     * select 下需要配置 options  {label: "7天",value: 8},
      * {label: "有效期(天)", name: "expire", type: "number", min: 1,value: "7"}
      */
     static config(){ return false; }

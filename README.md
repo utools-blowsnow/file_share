@@ -1,6 +1,7 @@
 
 
 # 多源文件上传
+- [x] 蓝奏云
 - [x] catbox.moe
 - [x] file.io
 - [x] firestorage.jp
@@ -13,3 +14,11 @@
 # 添加源
 请参照  ExampleCosUploader.js 例子
 自行模拟编写一个对接上传的接口
+
+
+## 注意
+修改了 combined_stream 的 append
+// buffer 判断 修改
+if(stream instanceof Uint8Array){
+isStreamLike = false;
+}

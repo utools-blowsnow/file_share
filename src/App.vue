@@ -75,7 +75,12 @@ for(let uploader of uploaders){
   uploader.config = {};
   if (uploader.configParameters){
     for(let uploaderElement of uploader.configParameters){
-      uploader.config[uploaderElement.name] = uploaderElement.value || null;
+      // 防止 0的问题无法设置
+      if (uploaderElement.value === undefined){
+        uploader.config[uploaderElement.name] = null;
+      }else{
+        uploader.config[uploaderElement.name] = uploaderElement.value;
+      }
     }
   }
 }
@@ -84,8 +89,9 @@ for(let uploader of uploaders){
 // 根据order排序 倒序
 uploaders.sort((a,b)=>{
   return b.order - a.order;
-
 });
+
+console.log(uploaders);
 
 
 export default {
@@ -136,12 +142,11 @@ export default {
   mounted(){
     if (window.utils.db("active_uploader")){
       this.activeUploaderName = window.utils.db("active_uploader");
-
-      // 加载配置
-      this.changeActiveUploader();
     }else{
       this.activeUploaderName = this.uploaders[0].name;
     }
+    // 加载配置
+    this.changeActiveUploader();
 
     this.autoCopy = window.utils.db('autoCopy')||false;
     this.list = this.getShareList();
@@ -151,7 +156,7 @@ export default {
     window.utools.onPluginEnter(({code, type, payload, optional}) => {
       console.log('用户进入插件', code, type, payload)
 
-      if (type === "files") {
+      if (type === "files" ) {
 
         this.$nextTick(()=>{
           this.uploads(payload);
@@ -173,6 +178,9 @@ export default {
           ...uploaderConfig
         }
       }
+
+      // 初始化uploader
+      this.uploader.instance.init(this.uploader);
     },
     /**
      * 打开上传配置对话框
