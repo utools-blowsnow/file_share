@@ -39,7 +39,7 @@ window.utils = {
         return obj.data;
     },
     request(params) {
-        params.proxy = 'http://127.0.0.1:8888';
+        // params.proxy = 'http://127.0.0.1:8888';
 
         console.log(params);
 
@@ -73,10 +73,3 @@ window.utils = {
     }
 
 }
-
-var logger = require('simple-node-logger').createSimpleLogger('D:\\project.log');
-var tempLog = console.log;
-// window.console.log = (...args) => {
-//     tempLog.apply(console, args);
-//     logger.info(...args);
-// };

@@ -315,9 +315,9 @@ export default {
 }
 .el-drawer__header{
   background: #f57681;
-  color: #fff;
-  margin-bottom: 30px;
-  padding-bottom: 20px;
+  color: #fff!important;
+  margin-bottom: 30px!important;
+  padding-bottom: 20px!important;
 }
 .upload-box{
   .el-upload{

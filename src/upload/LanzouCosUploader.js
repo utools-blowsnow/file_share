@@ -48,7 +48,7 @@ export default class LanzouCosUploader extends IUploader{
 
         console.log("fileup",result);
 
-        if (result.text === 'error'){
+        if (result.text === null){
             throw new UploadException(result.info);
         }
 
