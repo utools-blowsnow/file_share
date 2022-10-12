@@ -18,12 +18,13 @@
     "mime": "^3.0.0",
     "mime-types": "^2.1.27",
     "request": "^2.88.2",
-    "sass-loader": "^13.0.2",
     "simple-node-logger": "^21.8.12",
     "utility": "^1.17.0",
     "vue": "^2.6.11"
   },
   "devDependencies": {
+    "sass-loader": "^13.0.2",
+    "@vercel/ncc": "^0.34.0",
     "@vue/cli-plugin-babel": "~4.5.0",
     "@vue/cli-service": "~4.5.0",
     "asar": "^3.2.0",
