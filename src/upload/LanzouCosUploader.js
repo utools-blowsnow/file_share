@@ -18,37 +18,38 @@ export default class LanzouCosUploader extends IUploader{
 
         let buffer = Buffer.from(await file.arrayBuffer());
 
-        const formData = {
-            task: '1',
-            ve: '2',
-            id: 'WU_FILE_0',
-            name: file.name,
-            type: file.type,
-            size: file.size,
-            upload_file: {
-                value: buffer,
-                options: {
-                    filename: file.name,
-                    contentType: file.type
-                }
-            }
-        }
+        let formData = await utils.formData("upload_file", file);
+        formData.append("task","1");
+        formData.append("ve","2");
+        formData.append("id","WU_FILE_0");
+        formData.append("name",file.name);
+        formData.append("type", file.type);
+        formData.append("size", file.size);
+        // formData.append("upload_file", buffer, file.name);
+
         if (config.folder){
-            formData['folder_id_bb_n'] = config.folder;
+            formData.append("folder_id_bb_n",config.folder);
         }
 
-        let result = await window.utils.requestFormData({
+        let result = await utils.request({
             url: 'http://pc.woozooo.com/fileup.php',
             method: "post",
-            headers: headers,
+            headers: {
+                'Content-Type': 'multipart/form-data; boundary=' + formData.getBoundary(),
+                ...headers,
+            },
+            body: formData,
             onUploadProgress: function (progressEvent) { //原生获取上传进度的事件
                 progressCallback(progressEvent.loaded / progressEvent.total);
             }
-        },formData);
+        });
 
         console.log("fileup",result);
 
-        if (result.text === null){
+        if (result.zt !== 1){
+            throw new UploadException(result.info);
+        }
+        if (result.text[0] === undefined){
             throw new UploadException(result.info);
         }
 
