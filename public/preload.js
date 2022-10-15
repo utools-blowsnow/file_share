@@ -56,9 +56,9 @@ window.utils = {
         // params.proxy = 'http://127.0.0.1:8888';
         console.log(params);
 
-        params.agent = {
-            http: new HttpProxyAgent('http://127.0.0.1:8888'),
-        }
+        // params.agent = {
+        //     http: new HttpProxyAgent('http://127.0.0.1:8888'),
+        // }
 
         let response = await got(params).on('uploadProgress', (event) => {
             if (params.onUploadProgress){
