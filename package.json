@@ -14,16 +14,13 @@
     "element-ui": "^2.4.5",
     "form-data": "^4.0.0",
     "got": "^11.8.5",
-    "http-proxy-agent": "^5.0.0",
     "md5": "^2.3.0",
-    "mime": "^3.0.0",
     "mime-types": "^2.1.27",
-    "simple-node-logger": "^21.8.12",
     "utility": "^1.17.0",
     "vue": "^2.6.11"
   },
   "devDependencies": {
-    "sass-loader": "^13.0.2",
+    "http-proxy-agent": "^5.0.0",
     "@vercel/ncc": "^0.34.0",
     "@vue/cli-plugin-babel": "~4.5.0",
     "@vue/cli-service": "~4.5.0",

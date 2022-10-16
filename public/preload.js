@@ -1,24 +1,24 @@
 const fs = require('fs')
 const got = require('got');
 const NodeFormData = require('form-data');
-const {HttpProxyAgent} = require("http-proxy-agent");
+const mime = require('mime-types');
 // const axios = require("axios");
 
 window.utils = {
-    readFile: (pathObj) => {
-        var buffer = fs.readFileSync(pathObj.path);
+    readFile: ({path,name}) => {
+        var buffer = fs.readFileSync(path);
 
         class MyFile extends File {
-            setPath(path) {
-                this.temp_path = path;
+            setPath(path2) {
+                this.temp_path = path2;
             }
         }
-        const mime = require('mime/lite');
-        var file = new MyFile([buffer], pathObj.name,{
-            type: mime.getType(pathObj.path),
-            path: pathObj.path
+
+        var file = new MyFile([buffer], name,{
+            type: mime.lookup(path),
+            path: path
         });
-        file.setPath(pathObj.path);
+        file.setPath(path);
         return file;
     },
     createReadStream: (path) => {
@@ -53,7 +53,7 @@ window.utils = {
         return formData;
     },
     async request(params) {
-        // params.proxy = 'http://127.0.0.1:8888';
+
         console.log(params);
 
         // params.agent = {

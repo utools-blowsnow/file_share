@@ -1,6 +1,6 @@
 import IUploader from './IUploader'
 import axios from 'axios'
-import Qs from 'qs'
+
 import UploadException from './exception/UploadException'
 
 export default class AirportalUploader extends IUploader{
