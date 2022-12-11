@@ -18,7 +18,7 @@ export default class ExampleCosUploader extends GithubCosUploader{
 
     static config(){
         return [
-            {label: "*访问令牌", name: "token", type: "text"},
+            {label: "*访问令牌", name: "token", type: "text",desc:"请在 https://gitee.com/profile/personal_access_tokens 获取"},
             {label: "*仓库地址", name: "url", type: "text",desc:"例子：https://gitee.com/xxxx/xxxx"},
             {label: "存储路径", name: "path", type: "text"},
             {label: "分支路径", name: "branch", type: "text"},
