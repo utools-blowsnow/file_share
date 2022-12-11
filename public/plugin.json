@@ -3,6 +3,10 @@
   "description": "文件分享",
   "author": "blowsnow",
   "homepage": "https://github.com/utools-blowsnow/file_share",
+  "development": {
+    "main": "http://127.0.0.1:8080",
+    "preload": "preload.js"
+  },
   "main": "index.html",
   "preload": "preload.js",
   "logo": "logo.png",

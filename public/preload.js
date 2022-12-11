@@ -21,6 +21,10 @@ window.utils = {
         file.setPath(path);
         return file;
     },
+    fileToBase64: async (file) => {
+        let buffer = Buffer.from(file);
+        return buffer.toString('base64');
+    },
     createReadStream: (path) => {
         return fs.createReadStream(path);
     },
@@ -56,9 +60,11 @@ window.utils = {
 
         console.log(params);
 
-        // params.agent = {
-        //     http: new HttpProxyAgent('http://127.0.0.1:8888'),
-        // }
+        const {HttpProxyAgent} = require("http-proxy-agent");
+
+        params.agent = {
+            http: new HttpProxyAgent('http://127.0.0.1:8888'),
+        }
 
         let response = await got(params).on('uploadProgress', (event) => {
             if (params.onUploadProgress){

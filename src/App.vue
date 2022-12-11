@@ -54,6 +54,9 @@
             <template v-else>
               <el-input size="mini"  v-model="uploader.config[configParameter.name]"></el-input>
             </template>
+            <template v-if="configParameter.desc">
+              <div class="desc" v-html="configParameter.desc"></div>
+            </template>
           </el-form-item>
         </template>
       </el-form>
@@ -140,11 +143,13 @@ export default {
     }
   },
   mounted(){
+    console.log("mounted");
     if (window.utils.db("active_uploader")){
       this.activeUploaderName = window.utils.db("active_uploader");
     }else{
       this.activeUploaderName = this.uploaders[0].name;
     }
+    if (!this.uploader) this.activeUploaderName = this.uploaders[0].name;
     // 加载配置
     this.changeActiveUploader();
 
@@ -169,6 +174,8 @@ export default {
      * 修改激活的上传器
      */
     changeActiveUploader(){
+      if (!this.uploader) return false;
+
       window.utils.db("active_uploader",this.activeUploaderName);
 
       let uploaderConfig = window.utils.db("uploader_config_" + this.uploader.name);
@@ -309,6 +316,9 @@ export default {
 </script>
 
 <style lang="stylus" rel="stylesheet/stylus">
+#app{
+  overflow-x: hidden;
+}
 .skin-button{
   background: #f57681!important;
   border: #f57681!important;
@@ -350,5 +360,10 @@ export default {
   .clearfix{
     clear:both;
   }
+}
+
+.el-form-item__content .desc{
+  color: rgb(177, 177, 177);
+  line-height: normal;
 }
 </style>

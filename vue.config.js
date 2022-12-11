@@ -6,7 +6,7 @@ module.exports = {
   productionSourceMap: false,
   configureWebpack:{
     plugins:[
-      new PreloadPlugin()
+      // new PreloadPlugin()
     ],
   }
 }

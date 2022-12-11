@@ -1,7 +1,7 @@
 import IUploader from "@/upload/IUploader";
 import UploadException from "@/upload/exception/UploadException";
 
-export default class LanzouCosUploader extends IUploader{
+export default class LanzouUploader extends IUploader{
 
     static async upload(file,config=false,progressCallback=false) {
         // 验证有木有设置Cookie
@@ -40,7 +40,7 @@ export default class LanzouCosUploader extends IUploader{
             },
             body: formData,
             onUploadProgress: function (progressEvent) { //原生获取上传进度的事件
-                progressCallback(progressEvent.loaded / progressEvent.total);
+                progressCallback((progressEvent.loaded / progressEvent.total) * 100);
             }
         });
 
