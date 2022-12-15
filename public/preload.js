@@ -60,10 +60,11 @@ window.utils = {
 
         console.log(params);
 
-        const {HttpProxyAgent} = require("http-proxy-agent");
-
-        params.agent = {
-            http: new HttpProxyAgent('http://127.0.0.1:8888'),
+        if (utools.isDev()){
+            // const {HttpProxyAgent} = require("http-proxy-agent");
+            params.agent = {
+                // http: new HttpProxyAgent('http://127.0.0.1:8888'),
+            }
         }
 
         let response = await got(params).on('uploadProgress', (event) => {

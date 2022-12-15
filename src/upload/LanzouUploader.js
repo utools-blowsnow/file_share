@@ -125,7 +125,8 @@ export default class LanzouUploader extends IUploader{
     }
 
     static async login(url){
-        var result = await utools.ubrowser.goto(url)
+        let browser = utools.ubrowser;
+        var result = await browser.goto(url)
             // .devTools('detach')
             .wait(() => {
                 console.log(document.cookie,document.cookie.includes("phpdisk_info"));
@@ -141,6 +142,8 @@ export default class LanzouUploader extends IUploader{
             cookie = result[0];
 
             utools.showNotification('蓝奏云登陆成功')
+
+            browser.hide()
         }
 
         console.log('登陆成功',cookie);
