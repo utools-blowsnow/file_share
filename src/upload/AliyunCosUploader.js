@@ -33,6 +33,8 @@ export default class ExampleCosUploader extends IUploader{
         };
     }
 
+    static order(){ return 1;}
+
     static name(){
         return "阿里云对象存储";
     }

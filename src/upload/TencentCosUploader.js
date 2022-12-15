@@ -37,6 +37,8 @@ export default class TencentCosUploader extends IUploader{
         };
     }
 
+    static order(){ return 1;}
+
     static name(){
         return "腾讯云对象存储";
     }

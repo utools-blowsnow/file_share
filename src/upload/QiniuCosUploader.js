@@ -89,7 +89,7 @@ export default class ExampleCosUploader extends IUploader{
         return s.replace(/\//g, '_').replace(/\+/g, '-');
     };
 
-
+    static order(){ return 1;}
 
     static name(){
         return "七牛对象存储";

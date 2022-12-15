@@ -25,7 +25,7 @@ export default class ExampleCosUploader extends IUploader{
     }
 
     static order(){
-        return 11;
+        return 99;
     }
 
     static name(){
