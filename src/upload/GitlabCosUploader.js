@@ -42,7 +42,7 @@ export default class ExampleCosUploader extends IUploader{
         let owner = matches[2];
         let repo = matches[3];
         let repoId = urlencode(owner + "/" + repo);
-        const url = host + `/api/v4/projects/${repoId}/repository/files/${path}`;
+        const url = host + `/api/v4/projects/${repoId}/repository/files/${urlencode(path)}`;
         let branch = config.branch || 'master';
         let data = {
             commit_message: config.commit || 'utools 上传',
