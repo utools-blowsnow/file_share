@@ -13,12 +13,16 @@
       <div class="left-box">
         <div class="span">
           上传源：
-          <el-select placeholder="请选择" size="mini" v-model="activeUploaderName" @change="changeActiveUploader">
-            <el-option v-for="uploader in uploaders" :label="uploader.label" :value="uploader.name"></el-option>
+          <el-select placeholder="请选择" size="mini" v-model="activeConfigName"
+                     @change="changeActiveUploader">
+            <el-option v-for="uploader in configs" :label="uploader.title"
+                       :value="uploader.name"></el-option>
           </el-select>
         </div>
         <el-checkbox class="span" v-model="autoCopy">自动复制</el-checkbox>
-        <el-button v-if="uploader && uploader.configParameters" size="mini" icon="el-icon-setting" type="primary" class="skin-button" @click="openUploadConfigDialog">设置</el-button>
+        <el-button size="mini" icon="el-icon-setting" type="primary" class="skin-button"
+                   @click="openUploadConfigDialog">设置
+        </el-button>
       </div>
       <div class="right-box" >
         <el-button size="mini" type="danger" icon="el-icon-delete" class="skin-button" @click="clearShare">清空</el-button>
@@ -29,42 +33,8 @@
     <share-list :list="list" @remove="removeShare"></share-list>
 
 
-    <el-drawer
-        title="配置 - 修改自动保存"
-        :visible.sync="dialogVisible"
-        size="100%"
-        direction="rtl">
-      <el-form v-if="uploader" ref="form" label-width="150px" style="padding-right: 50px;">
-        <template v-for="configParameter in uploader.configParameters">
-          <el-form-item v-if="configParameter.type === 'tip'" :label="configParameter.label" style="margin: 0;">
-            <div style="color: rgb(177 177 177)" v-html="configParameter.value"></div>
-          </el-form-item>
-          <el-form-item v-else :label="configParameter.label">
-            <template v-if="configParameter.type === 'select'">
-              <el-select size="mini"  v-model="uploader.config[configParameter.name]">
-                <el-option v-for="option in configParameter.options" :label="option.label" :value="option.value"></el-option>
-              </el-select>
-            </template>
-            <template v-else-if="configParameter.type === 'number'">
-              <el-input-number size="mini" v-model="uploader.config[configParameter.name]" :min="configParameter.min === undefined ?1: 0" :max="configParameter.max||99999"></el-input-number>
-            </template>
-            <template v-else-if="configParameter.type === 'button'">
-              <el-button size="mini" @click="configParameter.handle($event,uploader)">{{configParameter.label}}</el-button>
-            </template>
-            <template v-else>
-              <el-input size="mini"  v-model="uploader.config[configParameter.name]"></el-input>
-            </template>
-            <template v-if="configParameter.desc">
-              <div class="desc" v-html="configParameter.desc"></div>
-            </template>
-          </el-form-item>
-        </template>
-      </el-form>
-    </el-drawer>
-
-<!--    <el-dialog title="配置" :visible.sync="dialogVisible" width="80%">-->
-<!--      -->
-<!--    </el-dialog>-->
+    <config-dialog ref="configDialog" :uploader="uploader" :configName="activeConfigName"
+                   @refreshConfig="refreshConfig"></config-dialog>
 
   </div>
 </template>
@@ -72,40 +42,14 @@
 <script>
 import ConfigDialog from "@/dialog/ConfigDialog";
 import ShareList from "@/components/ShareList";
-const uploaders = require('./plugins/uploaders').default;
-
-for(let uploader of uploaders){
-  uploader.config = {};
-  if (uploader.configParameters){
-    for(let uploaderElement of uploader.configParameters){
-      // 防止 0的问题无法设置
-      if (uploaderElement.value === undefined){
-        uploader.config[uploaderElement.name] = null;
-      }else{
-        uploader.config[uploaderElement.name] = uploaderElement.value;
-      }
-    }
-  }
-}
-
-
-// 根据order排序 倒序
-uploaders.sort((a,b)=>{
-  return b.order - a.order;
-});
-
-console.log(uploaders);
-
 
 export default {
   name: 'app',
   components: {ConfigDialog, ShareList},
   data(){
     return {
-      // 上传源列表
-      uploaders: uploaders,
 
-      activeUploaderName: "CowtransferUploader",
+      activeConfigName: "",
 
       // 上传历史列表
       list: [],
@@ -113,45 +57,35 @@ export default {
       // 弹窗显示
       dialogVisible: false,
 
+      configs: [],
+      currentConfig: null,
 
       initConfig: false,
-      autoCopy: false
+      autoCopy: false,
+
+      uploader: null
     }
   },
   watch:{
-    'uploader.config':{
-      handler(n,o){
-        if (this.initConfig === false) return;
-        //保存配置
-        window.utils.db("uploader_config_" + this.uploader.name,this.uploader.config);
-      },
-      // immediate: true,  //刷新加载 立马触发一次handler
-      deep: true
-    },
     autoCopy(){
       window.utils.db('autoCopy',this.autoCopy);
     }
   },
-  computed:{
-    uploader(){
-      for(let uploader of this.uploaders){
-        if (uploader.name === this.activeUploaderName){
-          return uploader;
-        }
-      }
-      return null;
-    }
-  },
   mounted(){
     console.log("mounted");
-    if (window.utils.db("active_uploader")){
-      this.activeUploaderName = window.utils.db("active_uploader");
+
+    this.refreshConfig();
+
+    if (window.utils.db("activeConfig")) {
+      this.activeConfigName = window.utils.db("activeConfig");
     }else{
-      this.activeUploaderName = this.uploaders[0].name;
+      this.activeConfigName = this.configs[0].name;
     }
-    if (!this.uploader) this.activeUploaderName = this.uploaders[0].name;
     // 加载配置
-    this.changeActiveUploader();
+    if (this.changeActiveUploader() === false) {
+      this.activeConfigName = this.configs[0].name;
+      this.changeActiveUploader();
+    }
 
     this.autoCopy = window.utils.db('autoCopy')||false;
     this.list = this.getShareList();
@@ -174,26 +108,35 @@ export default {
      * 修改激活的上传器
      */
     changeActiveUploader(){
-      if (!this.uploader) return false;
+      window.utils.db("activeConfig", this.activeConfigName);
 
-      window.utils.db("active_uploader",this.activeUploaderName);
-
-      let uploaderConfig = window.utils.db("uploader_config_" + this.uploader.name);
-      if (uploaderConfig){
-        this.uploader.config = {
-          ...this.uploader.config,
-          ...uploaderConfig
+      let currentConfig = null;
+      for (const config of this.configs) {
+        if (config.name === this.activeConfigName) {
+          currentConfig = config;
         }
       }
+      if (!currentConfig) return false;
+
+      let uploaderPlugin = this.$refs.configDialog.findUploader(currentConfig.uploaderName);
 
       // 初始化uploader
-      this.uploader.instance.init(this.uploader);
+      uploaderPlugin.instance.init(currentConfig);
+
+      this.uploader = uploaderPlugin;
+
+      this.currentConfig = currentConfig;
     },
+
+    refreshConfig() {
+      this.configs = this.$refs.configDialog.getConfigs();
+    },
+
     /**
      * 打开上传配置对话框
      */
     openUploadConfigDialog(){
-      this.dialogVisible = true;
+      this.$refs.configDialog.open();
     },
 
     /**
@@ -236,7 +179,7 @@ export default {
       });
 
       try {
-        var info = await this.uploader.instance.upload(file,this.uploader.config,(progress) => {
+        var info = await this.uploader.instance.upload(file, this.currentConfig.uploaderConfig, (progress) => {
           console.log(loading);
           loading.setText('正在上传 ' + file.name + ' ' + parseInt(progress) + '%');
         });
@@ -304,6 +247,7 @@ export default {
       this.list.splice(index,1);
       window.utils.db("share_list",this.list);
     },
+
     /**
      * 清空分享列表
      */
@@ -327,7 +271,7 @@ export default {
   background: #f57681;
   color: #fff!important;
   margin-bottom: 30px!important;
-  padding-bottom: 20px!important;
+  padding: 10px 20px !important;
 }
 .upload-box{
   .el-upload{

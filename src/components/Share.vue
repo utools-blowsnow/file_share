@@ -8,13 +8,20 @@
       <div v-if="item.uploader" class="url" style="margin-bottom: 5px;">{{ item.uploader.label }}</div>
       <div class="handle">
         <a @click="copy(item.url)">URL</a> |
+        <a @click="qrcode(item.url)">二维码</a> |
         <a @click="remove">删除</a>
       </div>
     </div>
+
+    <el-dialog title="二维码" center :visible.sync="qrcodeVisible">
+      <div ref="qrcode" style="display: flex;justify-content: center;"></div>
+    </el-dialog>
+
   </div>
 </template>
 
 <script type="text/ecmascript-6">
+import QRCode from 'qrcodejs2'
 export default {
   name: "Share",
   props: ['item'],
@@ -43,10 +50,29 @@ export default {
       return this.item.time + this.item.expire * 1000;
     }
   },
+  data() {
+    return {
+      qrcodeVisible: false
+    }
+  },
   methods:{
     copy(text){
       window.utools.copyText(text);
       this.$message.success("复制成功");
+    },
+    qrcode(text) {
+      this.qrcodeVisible = true;
+      console.log(this.$refs.qrcode);
+      this.$nextTick(() => {
+        var qrcode = new QRCode(this.$refs.qrcode, {
+          text: text, // 需要转换为二维码的内容
+          width: 200,
+          height: 200,
+          colorDark: '#000000',
+          colorLight: '#ffffff',
+          correctLevel: QRCode.CorrectLevel.H
+        })
+      })
     },
     remove(){
       this.$confirm("是否确认删除？", '确认信息').then(() => {
