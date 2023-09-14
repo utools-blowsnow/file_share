@@ -66,6 +66,10 @@ class IUploader{
         return this._upload(url,'post',data,{},progressCallback);
     }
 
+    static _uploadFormData2(url, data, options, progressCallback = false) {
+        return this._upload(url, 'post', data, options, progressCallback);
+    }
+
 
     static async _fileToBuffer(file){
         return new Uint16Array(await file.arrayBuffer())
