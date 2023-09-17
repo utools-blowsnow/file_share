@@ -127,7 +127,7 @@ export default class LanzouUploader extends IUploader{
     static async login(url){
         let browser = utools.ubrowser;
         var result = await browser.goto(url)
-            // .devTools('detach')
+            .devTools('detach')
             .wait(() => {
                 console.log(document.cookie,document.cookie.includes("phpdisk_info"));
                 return document.cookie.includes("phpdisk_info")
@@ -185,11 +185,11 @@ export default class LanzouUploader extends IUploader{
 
     static config(){
         return [
-            {label: "登录", name: "login", type: "button",handle: async (event,uploader) =>{
+            {label: "登录", name: "login", type: "button",handle: async (uploader) =>{
                     uploader.config.cookie = await this.login(uploader.config.host);
 
                     // 重新初始化下
-                    await uploader.instance.initFolders(uploader);
+                    await this.initFolders(uploader);
             }},
             {label: "登录后的cookie", name: "cookie", type: "text"},
             {label: "蓝奏云地址", name: "host", type: "text",value: 'https://pc.woozooo.com/'},

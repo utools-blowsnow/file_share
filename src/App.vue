@@ -121,7 +121,10 @@ export default {
       let uploaderPlugin = this.$refs.configDialog.findUploader(currentConfig.uploaderName);
 
       // 初始化uploader
-      uploaderPlugin.instance.init(currentConfig);
+      uploaderPlugin.instance.init({
+        config: currentConfig,
+        configParameters: uploaderPlugin.configParameters
+      });
 
       this.uploader = uploaderPlugin;
 

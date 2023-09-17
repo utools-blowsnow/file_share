@@ -42,7 +42,7 @@
                                    :max="configParameter.max||99999"></el-input-number>
                 </template>
                 <template v-else-if="configParameter.type === 'button'">
-                  <el-button size="mini" @click="configParameter.handle($event,uploader)">
+                  <el-button size="mini" @click="onHandleUploader(item, configParameter.handle)">
                     {{ configParameter.label }}
                   </el-button>
                 </template>
@@ -177,6 +177,15 @@ export default {
       return null;
     },
 
+    onHandleUploader(item, handle){
+      let uploader = this.findUploader(item.uploaderName);
+      console.log('onHandleUploader',item,uploader);
+      handle({
+        config: item.uploaderConfig,
+        configParameters: uploader.configParameters
+      })
+    },
+
     getCurrentConfig() {
       for (let config of this.configDatas) {
         if (config.name === this.currentConfigName) return config;
@@ -193,7 +202,6 @@ export default {
       let uploader = this.findUploader(item.uploaderName);
       console.log("changeUploader", uploader);
       if (uploader == null) {
-        this.$message.error("选择的上传插件有误");
         return;
       }
 
@@ -201,10 +209,10 @@ export default {
       // 获取插件所需的配置项
       for (const configParameter of uploader.configParameters) {
         if (!item.uploaderConfig.hasOwnProperty(configParameter.name)) {
-          item.uploaderConfig[configParameter.name] = configParameter.value || null;
+          this.$set(item.uploaderConfig,configParameter.name, configParameter.value || null);
         }
       }
-      console.log(item.uploaderConfig);
+      console.log('changeUploader 2',item);
     },
 
     save() {
