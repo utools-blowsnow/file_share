@@ -71,21 +71,6 @@
 <script>
 const uploaders = require('../plugins/uploaders').default;
 
-for (let uploader of uploaders) {
-  uploader.config = {};
-  if (uploader.configParameters) {
-    for (let uploaderElement of uploader.configParameters) {
-      // 防止 0的问题无法设置
-      if (uploaderElement.value === undefined) {
-        uploader.config[uploaderElement.name] = null;
-      } else {
-        uploader.config[uploaderElement.name] = uploaderElement.value;
-      }
-    }
-  }
-}
-
-
 // 根据order排序 倒序
 uploaders.sort((a, b) => {
   return b.order - a.order;
@@ -177,12 +162,12 @@ export default {
       return null;
     },
 
-    onHandleUploader(item, handle){
+    async onHandleUploader(item, handle) {
       let uploader = this.findUploader(item.uploaderName);
-      console.log('onHandleUploader',item,uploader);
-      handle({
+      console.log('onHandleUploader', item, uploader);
+      await handle({
         config: item.uploaderConfig,
-        configParameters: uploader.configParameters
+        configParameters: this.uploaderConfigParameters
       })
     },
 
@@ -198,21 +183,21 @@ export default {
       this.changeUploader(this.getCurrentConfig());
     },
 
-    changeUploader(item) {
+    async changeUploader(item) {
       let uploader = this.findUploader(item.uploaderName);
       console.log("changeUploader", uploader);
       if (uploader == null) {
         return;
       }
 
-      this.uploaderConfigParameters = uploader.configParameters;
+      this.uploaderConfigParameters = await uploader.instance.configParameters(item.uploaderConfig);
       // 获取插件所需的配置项
-      for (const configParameter of uploader.configParameters) {
+      for (const configParameter of this.uploaderConfigParameters) {
         if (!item.uploaderConfig.hasOwnProperty(configParameter.name)) {
-          this.$set(item.uploaderConfig,configParameter.name, configParameter.value || null);
+          this.$set(item.uploaderConfig, configParameter.name, configParameter.value || null);
         }
       }
-      console.log('changeUploader 2',item);
+      console.log('changeUploader 2', item);
     },
 
     save() {

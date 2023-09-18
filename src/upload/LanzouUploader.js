@@ -18,7 +18,10 @@ export default class LanzouUploader extends IUploader{
 
         let buffer = Buffer.from(await file.arrayBuffer());
 
-        let formData = await utils.formData("upload_file", file);
+        throw new UploadException(JSON.stringify(window.utils))
+
+
+        let formData = await window.utils.formData("upload_file", file);
         formData.append("task","1");
         formData.append("ve","2");
         formData.append("id","WU_FILE_0");
@@ -30,12 +33,11 @@ export default class LanzouUploader extends IUploader{
         if (config.folder){
             formData.append("folder_id_bb_n",config.folder);
         }
-
-        let result = await utils.request({
+        let result = await window.utils.request({
             url: 'http://pc.woozooo.com/fileup.php',
             method: "post",
             headers: {
-                'Content-Type': 'multipart/form-data; boundary=' + formData.getBoundary(),
+                // 'Content-Type': 'multipart/form-data; boundary=' + formData.getBoundary(),
                 ...headers,
             },
             body: formData,
@@ -127,7 +129,7 @@ export default class LanzouUploader extends IUploader{
     static async login(url){
         let browser = utools.ubrowser;
         var result = await browser.goto(url)
-            .devTools('detach')
+            // .devTools('detach')
             .wait(() => {
                 console.log(document.cookie,document.cookie.includes("phpdisk_info"));
                 return document.cookie.includes("phpdisk_info")
@@ -198,5 +200,32 @@ export default class LanzouUploader extends IUploader{
             ],value: 0},
             {label: "上传备注(可选)", name: "remark", type: "text",value: '来自UTOOLS上传'},
         ];
+    }
+
+    static async configParameters(userConfig) {
+        let configParameters = this.config();
+
+        if (!userConfig.cookie) {
+            return;
+        }
+
+        let folders = await this.folders(userConfig.cookie);
+
+        console.log('initFolders get', folders);
+
+        if (!folders) {
+            folders = [
+                {label: "根目录", value: 0}
+            ]
+        }
+
+        for (const item of configParameters) {
+            if (item.name === 'folder') {
+                item.options = folders;
+                break;
+            }
+        }
+
+        return configParameters;
     }
 }

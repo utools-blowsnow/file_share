@@ -106,8 +106,7 @@ export default {
   methods:{
     /**
      * 修改激活的上传器
-     */
-    changeActiveUploader(){
+     */ async changeActiveUploader() {
       window.utils.db("activeConfig", this.activeConfigName);
 
       let currentConfig = null;
@@ -123,7 +122,7 @@ export default {
       // 初始化uploader
       uploaderPlugin.instance.init({
         config: currentConfig,
-        configParameters: uploaderPlugin.configParameters
+        configParameters: await uploaderPlugin.instance.configParameters(currentConfig)
       });
 
       this.uploader = uploaderPlugin;

@@ -39,6 +39,13 @@ class IUploader{
      */
     static order(){ return 0;}
 
+
+    static async configParameters(userConfig) {
+        let configParameters = this.config();
+
+        return configParameters;
+    }
+
     static async uploadStream(url,file,method='post',params={},progressCallback=false){
         let buffer = Buffer.from(await this._fileToBuffer(file));
 
