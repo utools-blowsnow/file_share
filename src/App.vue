@@ -106,7 +106,8 @@ export default {
   methods:{
     /**
      * 修改激活的上传器
-     */ async changeActiveUploader() {
+     */
+    async changeActiveUploader() {
       window.utils.db("activeConfig", this.activeConfigName);
 
       let currentConfig = null;
@@ -116,6 +117,8 @@ export default {
         }
       }
       if (!currentConfig) return false;
+
+      console.log('changeActiveUploader',currentConfig.uploaderName, currentConfig);
 
       let uploaderPlugin = this.$refs.configDialog.findUploader(currentConfig.uploaderName);
 

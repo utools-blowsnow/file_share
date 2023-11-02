@@ -6,64 +6,63 @@
         size="100%"
         direction="rtl">
       <el-tabs style="margin: 0 50px;min-height: 30px;" v-model="currentConfigName"
-               @tab-click="changeConfig" type="card" editable @edit="handleTabsEdit">
+               @tab-click="onChangeTab" type="card" editable @edit="handleTabsEdit">
         <el-tab-pane
             :key="index"
             v-for="(item, index) in configDatas"
             :label="item.title"
             :name="item.name"
         >
-          <el-form ref="form" label-width="150px" style="padding-right: 50px;margin-bottom: 50px">
-            <el-form-item label="显示的名称" style="margin: 0;">
-              <el-input size="mini" v-model="item.title"></el-input>
-            </el-form-item>
-            <el-form-item label="上传插件" style="margin: 0;">
-              <el-select size="mini" v-model="item.uploaderName" @change="changeUploader(item)">
-                <el-option v-for="option in uploaders" :label="option.label"
-                           :value="option.name"></el-option>
-              </el-select>
-            </el-form-item>
-
-            <template v-for="configParameter in uploaderConfigParameters">
-              <el-form-item v-if="configParameter.type === 'tip'" :label="configParameter.label"
-                            style="margin: 0;">
-                <div style="color: rgb(177 177 177)" v-html="configParameter.value"></div>
-              </el-form-item>
-              <el-form-item v-else :label="configParameter.label">
-                <template v-if="configParameter.type === 'select'">
-                  <el-select size="mini" v-model="item.uploaderConfig[configParameter.name]">
-                    <el-option v-for="option in configParameter.options" :label="option.label"
-                               :value="option.value"></el-option>
-                  </el-select>
-                </template>
-                <template v-else-if="configParameter.type === 'number'">
-                  <el-input-number size="mini" v-model="item.uploaderConfig[configParameter.name]"
-                                   :min="configParameter.min === undefined ?1: 0"
-                                   :max="configParameter.max||99999"></el-input-number>
-                </template>
-                <template v-else-if="configParameter.type === 'button'">
-                  <el-button size="mini" @click="onHandleUploader(item, configParameter.handle)">
-                    {{ configParameter.label }}
-                  </el-button>
-                </template>
-                <template v-else>
-                  <el-input size="mini"
-                            v-model="item.uploaderConfig[configParameter.name]"></el-input>
-                </template>
-                <template v-if="configParameter.desc">
-                  <div class="desc" v-html="configParameter.desc"></div>
-                </template>
-              </el-form-item>
-            </template>
-
-            <el-form-item style="margin: 0;">
-              <el-button type="primary" style="width: 150px;" @click="save">保存</el-button>
-            </el-form-item>
-
-          </el-form>
         </el-tab-pane>
       </el-tabs>
+      <el-form v-if="currentConfig" ref="form" label-width="150px" style="padding-right: 50px;margin-bottom: 50px">
+        <el-form-item label="显示的名称" style="margin: 0;">
+          <el-input size="mini" v-model="currentConfig.title"></el-input>
+        </el-form-item>
+        <el-form-item label="上传插件" style="margin: 0;">
+          <el-select size="mini" v-model="currentConfig.uploaderName" @change="changeUploader(currentConfig)">
+            <el-option v-for="option in uploaders" :label="option.label"
+                       :value="option.name"></el-option>
+          </el-select>
+        </el-form-item>
 
+        <template v-for="configParameter in uploaderConfigParameters">
+          <el-form-item v-if="configParameter.type === 'tip'" :label="configParameter.label"
+                        style="margin: 0;">
+            <div style="color: rgb(177 177 177)" v-html="configParameter.value"></div>
+          </el-form-item>
+          <el-form-item v-else :label="configParameter.label">
+            <template v-if="configParameter.type === 'select'">
+              <el-select size="mini" v-model="currentConfig.uploaderConfig[configParameter.name]">
+                <el-option v-for="option in configParameter.options" :label="option.label"
+                           :value="option.value"></el-option>
+              </el-select>
+            </template>
+            <template v-else-if="configParameter.type === 'number'">
+              <el-input-number size="mini" v-model="currentConfig.uploaderConfig[configParameter.name]"
+                               :min="configParameter.min === undefined ?1: 0"
+                               :max="configParameter.max||99999"></el-input-number>
+            </template>
+            <template v-else-if="configParameter.type === 'button'">
+              <el-button size="mini" @click="onHandleUploader(configParameter)">
+                {{ configParameter.label }}
+              </el-button>
+            </template>
+            <template v-else>
+              <el-input size="mini"
+                        v-model="currentConfig.uploaderConfig[configParameter.name]"></el-input>
+            </template>
+            <template v-if="configParameter.desc">
+              <div class="desc" v-html="configParameter.desc"></div>
+            </template>
+          </el-form-item>
+        </template>
+
+        <el-form-item style="margin: 0;">
+          <el-button type="primary" style="width: 150px;" @click="save()">保存</el-button>
+        </el-form-item>
+
+      </el-form>
     </el-drawer>
   </div>
 </template>
@@ -85,6 +84,10 @@ export default {
       console.log(`Prop changed visible ${oldValue} to ${newValue}`);
       this.$emit("")
     },
+    configName(){
+      this.currentConfigName = this.configName || this.configDatas[0].name;
+      this.changeConfig(this.currentConfigName);
+    }
   },
   data() {
     return {
@@ -92,23 +95,26 @@ export default {
 
       uploaders: uploaders,
 
-      configDatas: [],
+      currentConfig: null,
       currentConfigName: null,
 
-      uploaderConfigParameters: []
+      configDatas: [],
+
+      uploaderConfigParameters: [],
+
+
     }
   },
   mounted() {
     this.initConfigDatas();
 
-    this.currentConfigName = this.configName || this.configDatas[0].name;
-
-    this.changeUploader(this.getCurrentConfig());
-
-
     if (this.configDatas.length <= 0) {
       this.handleTabsEdit(null, 'add');
     }
+
+    this.currentConfigName = this.configName || this.configDatas[0].name;
+    this.changeConfig(this.currentConfigName);
+
     console.log(uploaders);
   },
   methods: {
@@ -124,9 +130,13 @@ export default {
           uploaderConfig: {}
         });
         this.currentConfigName = name;
-      }
-      if (action === 'remove') {
+        this.changeConfig(this.currentConfigName);
+      }else if (action === 'remove') {
         this.configDatas = this.configDatas.filter(tab => tab.name !== targetName);
+        if (this.currentConfigName === targetName) {
+          this.currentConfigName = this.configDatas[0].name;
+          this.changeConfig(this.currentConfigName);
+        }
       }
     },
 
@@ -162,30 +172,44 @@ export default {
       return null;
     },
 
-    async onHandleUploader(item, handle) {
-      let uploader = this.findUploader(item.uploaderName);
-      console.log('onHandleUploader', item, uploader);
-      await handle({
-        config: item.uploaderConfig,
-        configParameters: this.uploaderConfigParameters
-      })
-    },
-
-    getCurrentConfig() {
-      for (let config of this.configDatas) {
-        if (config.name === this.currentConfigName) return config;
+    findConfig(name){
+      for (const config of this.configDatas) {
+        if (config.name === name) return config;
       }
       return null;
     },
 
-    changeConfig() {
-      console.log('changeConfig tab');
-      this.changeUploader(this.getCurrentConfig());
+    async onHandleUploader(configParameter) {
+      console.log('onHandleUploader', this.currentConfig, configParameter);
+      await configParameter.handle({
+        config: this.currentConfig.uploaderConfig,
+        configParameters: this.uploaderConfigParameters
+      })
+    },
+
+    getCurrentConfig(index) {
+      return this.configDatas[index];
+    },
+
+    onChangeTab(tab){
+      let index = parseInt(tab.index);
+      let name = this.configDatas[index].name;
+      this.changeConfig(name)
+    },
+    changeConfig(name) {
+      this.currentConfigName = name;
+      let currentConfig = this.findConfig(name)
+      this.currentConfig = {...currentConfig};
+      this.changeUploader(this.currentConfig);
     },
 
     async changeUploader(item) {
       let uploader = this.findUploader(item.uploaderName);
-      console.log("changeUploader", uploader);
+
+      this.currentConfig.uploaderName = item.uploaderName;
+      this.currentConfig.uploaderConfig = item.uploaderConfig;
+      this.uploaderConfigParameters = [];
+      console.log("changeUploader", item.uploaderName, item, uploader);
       if (uploader == null) {
         return;
       }
@@ -194,13 +218,19 @@ export default {
       // 获取插件所需的配置项
       for (const configParameter of this.uploaderConfigParameters) {
         if (!item.uploaderConfig.hasOwnProperty(configParameter.name)) {
-          this.$set(item.uploaderConfig, configParameter.name, configParameter.value || null);
+          this.currentConfig.uploaderConfig[configParameter.name] = configParameter.value || null;
         }
       }
-      console.log('changeUploader 2', item);
+      console.log('changeUploader 2', this.currentConfig, this.uploaderConfigParameters);
     },
 
     save() {
+      for (let i = 0; i < this.configDatas.length; i++) {
+        if (this.configDatas[i].name === this.currentConfig.name) {
+          this.configDatas[i] = this.currentConfig;
+          break;
+        }
+      }
 
       utools.dbStorage.setItem('configs', JSON.stringify(this.configDatas));
 

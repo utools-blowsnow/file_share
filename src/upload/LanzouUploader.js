@@ -188,7 +188,9 @@ export default class LanzouUploader extends IUploader{
     static config(){
         return [
             {label: "登录", name: "login", type: "button",handle: async (uploader) =>{
-                    uploader.config.cookie = await this.login(uploader.config.host);
+                    console.log("handle", uploader);
+
+                    uploader.config.cookie = await this.login(uploader.config.host || 'https://pc.woozooo.com/');
 
                     // 重新初始化下
                     await this.initFolders(uploader);
@@ -206,7 +208,7 @@ export default class LanzouUploader extends IUploader{
         let configParameters = this.config();
 
         if (!userConfig.cookie) {
-            return;
+            return super.configParameters(userConfig);
         }
 
         let folders = await this.folders(userConfig.cookie);

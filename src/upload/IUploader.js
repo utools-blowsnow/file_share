@@ -23,7 +23,7 @@ class IUploader{
      * 初始化配置
      * @param uploader
      */
-    static init(uploader){};
+    static init({config, configParameters}){};
 
     /**
      * 上传组件的配置
