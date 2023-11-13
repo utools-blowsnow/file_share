@@ -6,7 +6,7 @@
         size="100%"
         direction="rtl">
       <el-tabs style="margin: 0 50px;min-height: 30px;" v-model="currentConfigName"
-               @tab-click="onChangeTab" type="card" editable @edit="handleTabsEdit">
+               @tab-click="onChangeTab" type="card" addable @edit="handleTabsEdit">
         <el-tab-pane
             :key="index"
             v-for="(item, index) in configDatas"
@@ -60,6 +60,7 @@
 
         <el-form-item style="margin: 0;">
           <el-button type="primary" style="width: 150px;" @click="save()">保存</el-button>
+          <el-button type="danger" style="width: 150px;" @click="deleteConfig()">删除</el-button>
         </el-form-item>
 
       </el-form>
@@ -139,7 +140,16 @@ export default {
         }
       }
     },
+    async deleteConfig() {
+      await this.$confirm('此操作将永久删除该配置, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      });
+      this.handleTabsEdit(this.currentConfigName, 'remove');
 
+      utools.dbStorage.setItem('configs', JSON.stringify(this.configDatas));
+    },
     initConfigDatas() {
       this.configDatas = this.getConfigs();
     },

@@ -19,6 +19,7 @@
     "qrcodejs2": "^0.0.2",
     "urlencode": "^1.1.0",
     "utility": "^1.17.0",
+    "vconsole": "^3.15.1",
     "vue": "^2.6.11"
   },
   "devDependencies": {
@@ -29,7 +30,7 @@
     "http-proxy-agent": "^5.0.0",
     "stylus": "^0.54.7",
     "stylus-loader": "^3.0.2",
-    "utools-api-types": "^3.0.0",
+    "utools-api-types": "^4.0.0",
     "vue-cli-plugin-element": "~1.0.1",
     "vue-template-compiler": "^2.6.11"
   },

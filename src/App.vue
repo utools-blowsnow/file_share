@@ -42,6 +42,8 @@
 <script>
 import ConfigDialog from "@/dialog/ConfigDialog";
 import ShareList from "@/components/ShareList";
+import VConsole from 'vconsole';
+
 
 export default {
   name: 'app',
@@ -73,6 +75,13 @@ export default {
   },
   mounted(){
     console.log("mounted");
+
+    // 监听是否按下 ctrl + f12
+    window.addEventListener("keydown", (e) => {
+      if (e.ctrlKey && e.keyCode === 123) {
+        new VConsole();
+      }
+    });
 
     this.refreshConfig();
 

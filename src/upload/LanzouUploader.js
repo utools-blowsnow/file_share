@@ -18,9 +18,6 @@ export default class LanzouUploader extends IUploader{
 
         let buffer = Buffer.from(await file.arrayBuffer());
 
-        throw new UploadException(JSON.stringify(window.utils))
-
-
         let formData = await window.utils.formData("upload_file", file);
         formData.append("task","1");
         formData.append("ve","2");
