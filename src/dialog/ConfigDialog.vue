@@ -226,7 +226,8 @@ export default {
       // 获取插件所需的配置项
       for (const configParameter of this.uploaderConfigParameters) {
         if (!item.uploaderConfig.hasOwnProperty(configParameter.name)) {
-          this.$set(this.currentConfig.uploaderConfig, configParameter.name, configParameter.value || null);
+          let value = configParameter.hasOwnProperty('value') ? configParameter.value : null;
+          this.$set(this.currentConfig.uploaderConfig, configParameter.name, value);
         }
       }
       console.log('changeUploader 2', this.currentConfig, this.uploaderConfigParameters);
