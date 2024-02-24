@@ -119,8 +119,6 @@ export default {
     console.log(uploaders);
   },
   methods: {
-
-
     handleTabsEdit(targetName, action) {
       if (action === 'add') {
         let name = Date.now() + "" + Math.random();
@@ -168,7 +166,7 @@ export default {
           {
             name: "default",
             title: "默认",
-            uploaderName: "CatboxUploader",
+            uploaderName: "PixeldrianUploader",
             uploaderConfig: {}
           }
         ]
@@ -228,7 +226,7 @@ export default {
       // 获取插件所需的配置项
       for (const configParameter of this.uploaderConfigParameters) {
         if (!item.uploaderConfig.hasOwnProperty(configParameter.name)) {
-          this.currentConfig.uploaderConfig[configParameter.name] = configParameter.value || null;
+          this.$set(this.currentConfig.uploaderConfig, configParameter.name, configParameter.value || null);
         }
       }
       console.log('changeUploader 2', this.currentConfig, this.uploaderConfigParameters);

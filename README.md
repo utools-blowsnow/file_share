@@ -1,3 +1,5 @@
+# 注意 
+public 目录下 先 npm install 一下
 
 
 # 多源文件上传

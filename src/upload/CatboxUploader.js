@@ -29,7 +29,7 @@ export default class ExampleCosUploader extends IUploader{
     }
 
     static name(){
-        return "猫盒";
+        return "猫盒[被墙]";
     }
 
     static config(){
