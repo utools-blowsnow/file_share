@@ -48,12 +48,19 @@
                 {{ configParameter.label }}
               </el-button>
             </template>
+            <template v-else-if="configParameter.type === 'textarea'">
+              <el-input size="mini" type="textarea" :rows="4"
+                        v-model="currentConfig.uploaderConfig[configParameter.name]"></el-input>
+            </template>
             <template v-else>
               <el-input size="mini"
                         v-model="currentConfig.uploaderConfig[configParameter.name]"></el-input>
             </template>
             <template v-if="configParameter.desc">
               <div class="desc" v-html="configParameter.desc"></div>
+            </template>
+            <template v-if="configParameter.descPre">
+              <pre class="desc" v-html="configParameter.descPre"></pre>
             </template>
           </el-form-item>
         </template>
