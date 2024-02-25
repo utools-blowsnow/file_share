@@ -97,7 +97,7 @@ export default class ExampleCosUploader extends IUploader{
 
     static config(){
         return [
-            {label: "上传域名", name: "host", type: "text", value: "http://up.qiniu.com/"},
+            {label: "上传域名", name: "host", type: "text", value: "http://up.qiniu.com/",desc: "不同区域上传地址不一样，请自行修改"},
             {label: "下载域名", name: "downloadHost", type: "text", value: ""},
             {label: "AccessKey", name: "accessKey", type: "text"},
             {label: "SecretKey", name: "secretKey", type: "text"},

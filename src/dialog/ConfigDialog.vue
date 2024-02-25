@@ -69,6 +69,7 @@
 </template>
 
 <script>
+
 const uploaders = require('../plugins/uploaders').default;
 
 // 根据order排序 倒序
@@ -238,6 +239,13 @@ export default {
         if (this.configDatas[i].name === this.currentConfig.name) {
           this.configDatas[i] = this.currentConfig;
           break;
+        }
+      }
+      // 检测必填项是否填写
+      for (const configParameter of this.uploaderConfigParameters) {
+        if (configParameter.required && !this.currentConfig.uploaderConfig[configParameter.name]) {
+          this.$message.error(configParameter.label + " 不能为空");
+          return;
         }
       }
 
