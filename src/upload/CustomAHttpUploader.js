@@ -21,7 +21,7 @@ class CustomAHttpUploader extends IUploader{
     static config(){
         return [
             {label: "上传代码", name: "code", type: "textarea",required: true, descPre: `上传代码，使用fetch请求接口，返回下载地址
-例子：(变量：file File, progressCallback function(int))
+例子：(相关变量：file File, progressCallback function(int))
 return fetch("https://pixeldrain.com/api/file/" + file.name, {
     "method": "PUT",
     "body": file
