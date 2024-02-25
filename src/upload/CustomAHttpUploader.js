@@ -26,8 +26,7 @@ return fetch("https://pixeldrain.com/api/file/" + file.name, {
     "method": "PUT",
     "body": file
   }).then(res => res.json())
-    .then(res => "https://pixeldrain.com/u/" + res.id);
-}`},
+    .then(res => "https://pixeldrain.com/u/" + res.id);`},
         ];
     }
 }
