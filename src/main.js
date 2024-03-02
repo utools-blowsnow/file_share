@@ -7,9 +7,7 @@ require('./plugins/axios')
 Vue.config.productionTip = false
 
 
-utools.onPluginReady(() => {
-  new Vue({
-    render: h => h(App),
-  }).$mount('#app')
-})
+new Vue({
+  render: h => h(App),
+}).$mount('#app')
 

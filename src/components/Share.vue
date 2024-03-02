@@ -52,7 +52,8 @@ export default {
   },
   data() {
     return {
-      qrcodeVisible: false
+      qrcodeVisible: false,
+      qrcodeNode: null
     }
   },
   methods:{
@@ -64,15 +65,21 @@ export default {
       this.qrcodeVisible = true;
       console.log(this.$refs.qrcode);
       this.$nextTick(() => {
-        var qrcode = new QRCode(this.$refs.qrcode, {
-          text: text, // 需要转换为二维码的内容
-          width: 200,
-          height: 200,
-          colorDark: '#000000',
-          colorLight: '#ffffff',
-          correctLevel: QRCode.CorrectLevel.H
-        })
-      })
+        if (this.qrcodeNode == null){
+          this.qrcodeNode = new QRCode(this.$refs.qrcode, {
+            text: text,
+            width: 200,
+            height: 200,
+            colorDark: '#000000',
+            colorLight: '#ffffff',
+            correctLevel: QRCode.CorrectLevel.H
+          })
+        }else{
+          this.qrcodeNode.clear();
+          this.qrcodeNode.makeCode(text);
+        }
+      });
+
     },
     remove(){
       this.$confirm("是否确认删除？", '确认信息').then(() => {

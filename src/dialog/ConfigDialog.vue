@@ -21,7 +21,7 @@
         </el-form-item>
         <el-form-item label="上传插件" style="margin: 0;">
           <el-select size="mini" v-model="currentConfig.uploaderName" @change="changeUploader(currentConfig)">
-            <el-option v-for="option in uploaders" :label="option.label"
+            <el-option v-for="option in uploaders" :label="option.label" :key="option.name"
                        :value="option.name"></el-option>
           </el-select>
         </el-form-item>

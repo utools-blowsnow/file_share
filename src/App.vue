@@ -83,18 +83,13 @@ export default {
       }
     });
 
-    this.refreshConfig();
-
     if (window.utils.db("activeConfig")) {
       this.activeConfigName = window.utils.db("activeConfig");
     }else{
       this.activeConfigName = this.configs[0].name;
     }
-    // 加载配置
-    if (this.changeActiveUploader() === false) {
-      this.activeConfigName = this.configs[0].name;
-      this.changeActiveUploader();
-    }
+
+    this.refreshConfig();
 
     this.autoCopy = window.utils.db('autoCopy')||false;
     this.list = this.getShareList();
@@ -144,6 +139,12 @@ export default {
 
     refreshConfig() {
       this.configs = this.$refs.configDialog.getConfigs();
+      // 加载配置
+      if (this.changeActiveUploader() === false) {
+        this.activeConfigName = this.configs[0].name;
+        this.changeActiveUploader();
+      }
+      console.log('refreshConfig', this.configs);
     },
 
     /**
